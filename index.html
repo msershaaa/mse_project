@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem P2H & Maintenance Fleet</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f6f9; }
+        h1, h2 { color: #333; }
+        .card { background: white; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        button { background-color: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; margin-right: 5px; }
+        button.danger { background-color: #dc3545; }
+        button.success { background-color: #28a745; }
+        select, input, textarea { width: 100%; padding: 8px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .status-badge { font-weight: bold; padding: 3px 8px; border-radius: 4px; color: white; display: inline-block; }
+        .bg-pending { background-color: #ffc107; color: black; }
+        .bg-process { background-color: #17a2b8; }
+        .bg-done { background-color: #28a745; }
+        .bg-reject { background-color: #dc3545; }
+    </style>
+</head>
+<body>
+
+    <h1>Sistem P2H & Pelaporan Kerusakan Unit</h1>
+
+    <!-- FORM INPUT P2H DRIVER -->
+    <div class="card">
+        <h2>1. Form P2H Digital (Driver)</h2>
+        <form id="p2hForm">
+            <label>Nomor Lambung / ID Unit:</label>
+            <input type="text" id="unitId" placeholder="Contoh: DT-01" required>
+
+            <label>Nama Driver:</label>
+            <input type="text" id="driverName" placeholder="Contoh: Budi" required>
+
+            <label>Kondisi Unit:</label>
+            <select id="p2hStatus" onchange="toggleDamageReport()">
+                <option value="SEMUA OK">SEMUA OK</option>
+                <option value="ADA TEMUAN">ADA TEMUAN (Kerusakan)</option>
+            </select>
+
+            <div id="damageReportBox" style="display: none;">
+                <label>Detail Temuan Kerusakan (Damage Report):</label>
+                <textarea id="damageDetail" placeholder="Deskripsikan kerusakan unit..."></textarea>
+            </div>
+
+            <button type="submit" class="success">Kirim Laporan P2H</button>
+        </form>
+    </div>
+
+    <!-- DAFTAR LAPORAN & FLOW LOGIKA -->
+    <div class="card">
+        <h2>2. Daftar Antrean & Status Perbaikan</h2>
+        <div id="reportList">Belum ada laporan.</div>
+    </div>
+
+    <script>
+        let reports = [];
+
+        function toggleDamageReport() {
+            const status = document.getElementById('p2hStatus').value;
+            document.getElementById('damageReportBox').style.display = (status === 'ADA TEMUAN') ? 'block' : 'none';
+        }
+
+        document.getElementById('p2hForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const unit = document.getElementById('unitId').value;
+            const driver = document.getElementById('driverName').value;
+            const p2hStatus = document.getElementById('p2hStatus').value;
+            const detail = document.getElementById('damageDetail').value;
+
+            if (p2hStatus === 'SEMUA OK') {
+                alert(`P2H untuk Unit ${unit} berhasil. Kondisi Baik - SELESAI.`);
+            } else {
+                const newReport = {
+                    id: Date.now(),
+                    unit: unit,
+                    driver: driver,
+                    detail: detail,
+                    status: 'MENUNGGU VALIDASI PENGAWAS',
+                    workOrder: '',
+                    verified: false
+                };
+                reports.push(newReport);
+                renderReports();
+                alert(`Damage Report dikirim untuk Unit ${unit}. Menunggu Validasi Pengawas.`);
+            }
+
+            this.reset();
+            toggleDamageReport();
+        });
+
+        function updateStatus(id, newStatus, woDetail = '') {
+            const item = reports.find(r => r.id === id);
+            if (item) {
+                item.status = newStatus;
+                if (woDetail) item.workOrder = woDetail;
+                renderReports();
+            }
+        }
+
+        function renderReports() {
+            const container = document.getElementById('reportList');
+            if (reports.length === 0) {
+                container.innerHTML = 'Belum ada laporan kerusakan.';
+                return;
+            }
+
+            container.innerHTML = reports.map(r => `
+                <div style="border: 1px solid #ddd; padding: 10px; margin-top: 10px; border-radius: 5px;">
+                    <strong>Unit:</strong> ${r.unit} | <strong>Driver:</strong> ${r.driver}<br>
+                    <strong>Temuan Kerusakan:</strong> ${r.detail}<br>
+                    <strong>Status Alur:</strong> <span class="status-badge bg-pending">${r.status}</span>
+                    ${r.workOrder ? `<br><strong>Work Order:</strong> ${r.workOrder}` : ''}
+                    <hr>
+                    <!-- Aksi Berdasarkan Alur Logika -->
+                    ${r.status === 'MENUNGGU VALIDASI PENGAWAS' ? `
+                        <button onclick="updateStatus(${r.id}, 'KLASIFIKASI & TUGASKAN MEKANIK')" class="success">Pengawas: Valid (Lanjutkan)</button>
+                        <button onclick="updateStatus(${r.id}, 'CLOSED (DITOLAK PENGAWAS)')" class="danger">Pengawas: Tidak Valid (Closed)</button>
+                    ` : ''}
+
+                    ${r.status === 'KLASIFIKASI & TUGASKAN MEKANIK' ? `
+                        <button onclick="promptWorkOrder(${r.id})">Mekanik: Buat Work Order & Mulai Repair</button>
+                    ` : ''}
+
+                    ${r.status === 'PROSES REPAIR' ? `
+                        <button onclick="updateStatus(${r.id}, 'REPAIR COMPLETED (MENUNGGU VERIFIKASI)')" class="success">Mekanik: Repair Selesai</button>
+                    ` : ''}
+
+                    ${r.status === 'REPAIR COMPLETED (MENUNGGU VERIFIKASI)' ? `
+                        <button onclick="updateStatus(${r.id}, 'CLOSED (VERIFIKASI BERHASIL)')" class="success">Verifikator: Valid (Closed)</button>
+                        <button onclick="updateStatus(${r.id}, 'PROSES REPAIR', 'Repair Ulang Diperlukan')" class="danger">Verifikator: Tidak Valid (Repair Ulang)</button>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        function promptWorkOrder(id) {
+            const wo = prompt("Masukkan Deskripsi Work Order / Perbaikan yang Akan Dilakukan:");
+            if (wo) {
+                updateStatus(id, 'PROSES REPAIR', wo);
+            }
+        }
+    </script>
+</body>
+</html>
