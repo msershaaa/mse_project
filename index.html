@@ -156,10 +156,10 @@
     </div>
 
     <script>
-        // Inisialisasi Supabase
+        // Inisialisasi Supabase (Cukup Dideklarasikan 1x)
         const SUPABASE_URL = 'https://nnpihyxmckwetfaypsyk.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ucGloeXhtY2t3ZXRmYXlwc3lrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5ODY2OTgsImV4cCI6MjEwNTU2MjY5OH0.FLALmEmC8HqCj-VwLEYsIBk-RpGY22epjx04KlZymiI';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let currentUser = null;
         let allEmployees = [];
@@ -186,7 +186,6 @@
             
             document.getElementById('userDisplay').innerHTML = `Halo, <strong>${currentUser.nama_user}</strong> <span class="badge-role">${currentUser.role.toUpperCase()}</span>`;
 
-            // Atur Hak Akses berdasarkan Role
             if (currentUser.role === 'admin') {
                 document.getElementById('adminUserSection').classList.remove('hidden');
                 document.getElementById('addEmployeeSection').classList.remove('hidden');
@@ -206,12 +205,12 @@
             const usernameInput = document.getElementById('loginUsername').value;
             const passwordInput = document.getElementById('loginPassword').value;
 
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('users_app')
                 .select('*')
                 .eq('username', usernameInput)
                 .eq('password', passwordInput)
-                .single();
+                .maybeSingle();
 
             if (error || !data) {
                 alert('Username atau password salah!');
@@ -239,7 +238,7 @@
                 role: document.getElementById('newRole').value
             };
 
-            const { error } = await supabase.from('users_app').insert([newUser]);
+            const { error } = await supabaseClient.from('users_app').insert([newUser]);
             if (error) {
                 alert('Gagal membuat user: ' + error.message);
             } else {
@@ -251,7 +250,7 @@
         // Fetch Data Karyawan
         async function fetchEmployees() {
             const tbody = document.getElementById('employeeTableBody');
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('karyawan')
                 .select('*')
                 .order('id', { ascending: false });
@@ -299,7 +298,7 @@
                 no_hp: document.getElementById('noHp').value
             };
 
-            const { error } = await supabase.from('karyawan').insert([newEmployee]);
+            const { error } = await supabaseClient.from('karyawan').insert([newEmployee]);
             if (error) {
                 alert('Gagal menyimpan: ' + error.message);
             } else {
@@ -312,7 +311,7 @@
         // Admin: Hapus Karyawan
         async function deleteEmployee(id, nama) {
             if (confirm(`Yakin ingin menghapus ${nama}?`)) {
-                const { error } = await supabase.from('karyawan').delete().eq('id', id);
+                const { error } = await supabaseClient.from('karyawan').delete().eq('id', id);
                 if (error) alert('Gagal menghapus: ' + error.message);
                 else fetchEmployees();
             }
