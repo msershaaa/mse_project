@@ -88,7 +88,7 @@
                     <i data-lucide="user-minus" class="w-4 h-4"></i>
                     <span>Karyawan Keluar / Resign</span>
                 </button>
-                <!-- TAB KHUSUS ADMIN ONLY -->
+                <!-- TAB KELOLA USER (OTOMATIS DISEMBUNYIKAN UNTUK STAF) -->
                 <button id="tabUserBtn" class="hidden flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 hover:bg-white transition-all whitespace-nowrap" onclick="switchTab('user')">
                     <i data-lucide="shield-check" class="w-4 h-4"></i>
                     <span>Kelola Akun User</span>
@@ -101,7 +101,7 @@
 
             <!-- ================= PAGE 1: KARYAWAN AKTIF (UTAMA) ================= -->
             <div id="pageActive" class="space-y-6">
-                <!-- FORM TAMBAH / EDIT KARYAWAN (KHUSUS ADMIN) -->
+                <!-- FORM TAMBAH / EDIT KARYAWAN (KHUSUS ADMIN / MANAGER) -->
                 <div id="addEmployeeSection" class="bg-gradient-to-r from-sky-50/50 via-purple-50/30 to-pink-50/40 p-6 rounded-3xl border border-sky-100 shadow-sm space-y-4 hidden">
                     <h2 id="formTitle" class="text-base font-bold text-slate-900 flex items-center gap-2">
                         <i data-lucide="user-plus" class="w-5 h-5 text-indigo-600"></i>
@@ -229,7 +229,7 @@
                 </div>
             </div>
 
-            <!-- ================= PAGE 3: KELOLA AKUN USER (KHUSUS ADMIN) ================= -->
+            <!-- ================= PAGE 3: KELOLA AKUN USER ================= -->
             <div id="pageUser" class="hidden space-y-6">
                 <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-6">
                     <div>
@@ -363,7 +363,7 @@
                                 <i data-lucide="shield-alert" class="w-4 h-4 text-amber-500"></i>
                                 Sanksi / SP Karyawan (<span id="txtTahunSanksi">2026</span>)
                             </h3>
-                            <!-- TOMBOL CATAT SANKSI HANYA DI TAMPILKAN UNTUK ADMIN -->
+                            <!-- TOMBOL CATAT SANKSI HANYA DITAMPILKAN UNTUK ADMIN -->
                             <button id="btnAddSanksiBtn" class="hidden text-xs bg-amber-50 text-amber-700 hover:bg-amber-100 px-3 py-1.5 rounded-xl font-medium transition-all" onclick="openAddSanksiModal()">
                                 + Catat Sanksi
                             </button>
@@ -424,7 +424,7 @@
         </div>
     </div>
 
-    <!-- MODAL INPUT SANKSI / SP (ADMIN ONLY) -->
+    <!-- MODAL INPUT SANKSI / SP (KHUSUS ADMIN) -->
     <div id="sanksiModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-xl space-y-4 border border-slate-100">
             <h3 class="font-bold text-slate-900 text-base">+ Catat Sanksi Karyawan</h3>
@@ -498,37 +498,39 @@
             document.getElementById('mainSection').classList.remove('hidden');
             
             const nameDisplay = currentUser.name_user || currentUser.nama_user || 'User';
-            const userRole = (currentUser.role || '').toLowerCase(); // Konversi ke lowercase untuk kehandalan
+            const userRole = (currentUser.role || '').toLowerCase();
 
             document.getElementById('userDisplay').innerHTML = `Halo, <strong class="text-slate-800">${nameDisplay}</strong> <span class="bg-indigo-50 text-indigo-700 border border-indigo-100 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ml-1">${userRole}</span>`;
 
-            // PERBAIKAN LOGIKA HAK AKSES STRICT ADMIN VS STAF
-            if (userRole === 'admin') {
+            // LOGIKA HAK AKSES KHUSUS UNTUK STAF VS ADMIN
+            if (userRole === 'staf') {
+                // SEMBUNYIKAN TAB KELOLA USER KHUSUS STAF
+                document.getElementById('tabUserBtn').classList.add('hidden');
+                document.getElementById('addEmployeeSection').classList.add('hidden');
+                document.getElementById('btnAddSanksiBtn').classList.add('hidden');
+                document.getElementById('thAksi').classList.add('hidden');
+                document.getElementById('thAksiResign').classList.add('hidden');
+            } else {
+                // TAMPILKAN JIKA BUKAN STAF (ADMIN / MANAGER)
                 document.getElementById('tabUserBtn').classList.remove('hidden');
                 document.getElementById('addEmployeeSection').classList.remove('hidden');
                 document.getElementById('btnAddSanksiBtn').classList.remove('hidden');
                 document.getElementById('thAksi').classList.remove('hidden');
                 document.getElementById('thAksiResign').classList.remove('hidden');
                 fetchUsers();
-            } else {
-                // APABILA ROLE ADALAH STAF ATAU SELAIN ADMIN
-                document.getElementById('tabUserBtn').classList.add('hidden');
-                document.getElementById('addEmployeeSection').classList.add('hidden');
-                document.getElementById('btnAddSanksiBtn').classList.add('hidden');
-                document.getElementById('thAksi').classList.add('hidden');
-                document.getElementById('thAksiResign').classList.add('hidden');
             }
 
-            // DEFAULT TAB: DATA KARYAWAN AKTIF
             switchTab('active');
             fetchEmployees();
             lucide.createIcons();
         }
 
         function switchTab(tabName) {
-            // Pastikan Staf tidak bisa mengakses tab user secara langsung
             const userRole = (currentUser?.role || '').toLowerCase();
-            if (tabName === 'user' && userRole !== 'admin') {
+            
+            // CEK & BLOKIR JIKA ROLE STAF MENCOBA AKSES TAB USER
+            if (tabName === 'user' && userRole === 'staf') {
+                alert('Akses Ditolak! Staf tidak memiliki akses ke Kelola Akun User.');
                 tabName = 'active';
             }
 
@@ -558,7 +560,7 @@
             }
         }
 
-        // Login & Logout
+        // LOGIN & LOGOUT
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const usernameInput = document.getElementById('loginUsername').value;
@@ -586,9 +588,9 @@
             showLogin();
         }
 
-        // --- MANAJEMEN USER (KHUSUS ADMIN) ---
+        // MANAJEMEN USER (ADMIN ONLY)
         async function fetchUsers() {
-            if ((currentUser?.role || '').toLowerCase() !== 'admin') return;
+            if ((currentUser?.role || '').toLowerCase() === 'staf') return;
 
             const tbody = document.getElementById('userTableBody');
             const { data, error } = await supabaseClient.from('users_app').select('*').order('id', { ascending: true });
@@ -616,7 +618,7 @@
 
         document.getElementById('addUserForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            if ((currentUser?.role || '').toLowerCase() !== 'admin') return;
+            if ((currentUser?.role || '').toLowerCase() === 'staf') return;
 
             const newUser = {
                 username: document.getElementById('newUsername').value,
@@ -636,7 +638,7 @@
         });
 
         async function deleteUser(id, username) {
-            if ((currentUser?.role || '').toLowerCase() !== 'admin') return;
+            if ((currentUser?.role || '').toLowerCase() === 'staf') return;
             if (confirm(`Yakin ingin menghapus akses akun ${username}?`)) {
                 const { error } = await supabaseClient.from('users_app').delete().eq('id', id);
                 if (error) alert('Gagal menghapus user: ' + error.message);
@@ -644,7 +646,7 @@
             }
         }
 
-        // --- MANAJEMEN KARYAWAN & DASHBOARD ---
+        // MANAJEMEN KARYAWAN & DASHBOARD
         async function fetchEmployees() {
             const { data, error } = await supabaseClient
                 .from('karyawan')
@@ -743,7 +745,7 @@
                 return;
             }
 
-            const isAdmin = currentUser && (currentUser.role || '').toLowerCase() === 'admin';
+            const isStaf = currentUser && (currentUser.role || '').toLowerCase() === 'staf';
 
             tbody.innerHTML = dataList.map(e => {
                 let badgeStyle = "bg-slate-100 text-slate-700 border-slate-200";
@@ -765,7 +767,7 @@
                             </span>
                         </td>
                         <td class="py-3.5 px-5 text-slate-500">${e.no_hp}</td>
-                        ${isAdmin ? `
+                        ${!isStaf ? `
                             <td class="py-3.5 px-5 text-right">
                                 <div class="flex items-center justify-end gap-1.5">
                                     <button class="bg-amber-50 text-amber-700 hover:bg-amber-100 px-2.5 py-1 rounded-lg font-medium transition-all" onclick="editEmployee(${e.id})">Edit</button>
@@ -785,7 +787,7 @@
                 return;
             }
 
-            const isAdmin = currentUser && (currentUser.role || '').toLowerCase() === 'admin';
+            const isStaf = currentUser && (currentUser.role || '').toLowerCase() === 'staf';
 
             tbody.innerHTML = dataList.map(e => `
                 <tr class="hover:bg-slate-50/60 transition-colors opacity-75">
@@ -795,7 +797,7 @@
                     <td class="py-3.5 px-5 text-slate-500">${e.departemen}</td>
                     <td class="py-3.5 px-5"><span class="bg-rose-50 text-rose-700 border border-rose-100 font-semibold px-2.5 py-0.5 rounded-full text-[11px]">Resign / Keluar</span></td>
                     <td class="py-3.5 px-5 text-slate-500">${e.no_hp}</td>
-                    ${isAdmin ? `
+                    ${!isStaf ? `
                         <td class="py-3.5 px-5 text-right">
                             <button class="bg-rose-600 text-white hover:bg-rose-700 px-3 py-1 rounded-lg font-medium transition-all shadow-sm" onclick="deletePermanently(${e.id}, '${e.nama}')">Hapus Permanen</button>
                         </td>
@@ -804,10 +806,10 @@
             `).join('');
         }
 
-        // SIMPAN & UPLOAD FOTO (ADMIN ONLY)
+        // SIMPAN & UPLOAD FOTO
         document.getElementById('employeeForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            if ((currentUser?.role || '').toLowerCase() !== 'admin') return;
+            if ((currentUser?.role || '').toLowerCase() === 'staf') return;
 
             const editId = document.getElementById('editEmployeeId').value;
             const fileInput = document.getElementById('fotoFile');
@@ -888,7 +890,7 @@
 
         // SANKSI MODAL
         function openAddSanksiModal() {
-            if ((currentUser?.role || '').toLowerCase() !== 'admin') return;
+            if ((currentUser?.role || '').toLowerCase() === 'staf') return;
 
             const selectEmp = document.getElementById('sanksiKaryawanId');
             const activeEmps = allEmployees.filter(e => e.status !== 'Resign');
@@ -902,7 +904,7 @@
 
         document.getElementById('sanksiForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            if ((currentUser?.role || '').toLowerCase() !== 'admin') return;
+            if ((currentUser?.role || '').toLowerCase() === 'staf') return;
 
             const payload = {
                 karyawan_id: parseInt(document.getElementById('sanksiKaryawanId').value),
@@ -922,7 +924,7 @@
         });
 
         function editEmployee(id) {
-            if ((currentUser?.role || '').toLowerCase() !== 'admin') return;
+            if ((currentUser?.role || '').toLowerCase() === 'staf') return;
 
             const emp = allEmployees.find(e => e.id === id);
             if (!emp) return;
@@ -952,7 +954,7 @@
         }
 
         async function markAsResign(id, nama) {
-            if ((currentUser?.role || '').toLowerCase() !== 'admin') return;
+            if ((currentUser?.role || '').toLowerCase() === 'staf') return;
 
             if (confirm(`Pindahkan data ${nama} ke daftar Karyawan Resign / Keluar?`)) {
                 const { error } = await supabaseClient.from('karyawan').update({ status: 'Resign' }).eq('id', id);
@@ -962,7 +964,7 @@
         }
 
         async function deletePermanently(id, nama) {
-            if ((currentUser?.role || '').toLowerCase() !== 'admin') return;
+            if ((currentUser?.role || '').toLowerCase() === 'staf') return;
 
             if (confirm(`HAPUS PERMANEN data ${nama} dari database?`)) {
                 const { error } = await supabaseClient.from('karyawan').delete().eq('id', id);
