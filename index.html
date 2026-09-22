@@ -78,7 +78,7 @@
         <!-- CONTAINER UTAMA -->
         <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-1 space-y-6">
 
-            <!-- TAB MENU NAVIGASI (URUTAN BARU) -->
+            <!-- TAB MENU NAVIGASI -->
             <div class="flex items-center gap-2 border-b border-slate-200/60 pb-3 overflow-x-auto">
                 <button id="tabActiveBtn" class="flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-semibold bg-indigo-600 text-white shadow-md shadow-indigo-200 transition-all whitespace-nowrap" onclick="switchTab('active')">
                     <i data-lucide="users" class="w-4 h-4"></i>
@@ -88,6 +88,7 @@
                     <i data-lucide="user-minus" class="w-4 h-4"></i>
                     <span>Karyawan Keluar / Resign</span>
                 </button>
+                <!-- TAB KHUSUS ADMIN ONLY -->
                 <button id="tabUserBtn" class="hidden flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-medium text-slate-600 hover:bg-white transition-all whitespace-nowrap" onclick="switchTab('user')">
                     <i data-lucide="shield-check" class="w-4 h-4"></i>
                     <span>Kelola Akun User</span>
@@ -100,7 +101,7 @@
 
             <!-- ================= PAGE 1: KARYAWAN AKTIF (UTAMA) ================= -->
             <div id="pageActive" class="space-y-6">
-                <!-- FORM TAMBAH / EDIT KARYAWAN (ADMIN ONLY) -->
+                <!-- FORM TAMBAH / EDIT KARYAWAN (KHUSUS ADMIN) -->
                 <div id="addEmployeeSection" class="bg-gradient-to-r from-sky-50/50 via-purple-50/30 to-pink-50/40 p-6 rounded-3xl border border-sky-100 shadow-sm space-y-4 hidden">
                     <h2 id="formTitle" class="text-base font-bold text-slate-900 flex items-center gap-2">
                         <i data-lucide="user-plus" class="w-5 h-5 text-indigo-600"></i>
@@ -189,7 +190,7 @@
                                     <th class="py-3.5 px-5">Departemen</th>
                                     <th class="py-3.5 px-5">Status</th>
                                     <th class="py-3.5 px-5">No HP</th>
-                                    <th id="thAksi" class="py-3.5 px-5 text-right">Aksi</th>
+                                    <th id="thAksi" class="py-3.5 px-5 text-right hidden">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="employeeTableBody" class="divide-y divide-slate-100">
@@ -217,7 +218,7 @@
                                     <th class="py-3.5 px-5">Departemen</th>
                                     <th class="py-3.5 px-5">Status Terakhir</th>
                                     <th class="py-3.5 px-5">No HP</th>
-                                    <th id="thAksiResign" class="py-3.5 px-5 text-right">Aksi Admin</th>
+                                    <th id="thAksiResign" class="py-3.5 px-5 text-right hidden">Aksi Admin</th>
                                 </tr>
                             </thead>
                             <tbody id="resignTableBody" class="divide-y divide-slate-100">
@@ -228,7 +229,7 @@
                 </div>
             </div>
 
-            <!-- ================= PAGE 3: KELOLA AKUN USER (ADMIN ONLY) ================= -->
+            <!-- ================= PAGE 3: KELOLA AKUN USER (KHUSUS ADMIN) ================= -->
             <div id="pageUser" class="hidden space-y-6">
                 <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-6">
                     <div>
@@ -284,7 +285,7 @@
                 </div>
             </div>
 
-            <!-- ================= PAGE 0: DASHBOARD STATISTIK (DIPINDAHKAN KE AKHIR) ================= -->
+            <!-- ================= PAGE 0: DASHBOARD STATISTIK ================= -->
             <div id="pageDashboard" class="hidden space-y-6">
                 <div class="bg-gradient-to-r from-violet-500/10 via-purple-500/10 to-pink-500/10 p-6 rounded-3xl border border-purple-100/50 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
@@ -301,7 +302,7 @@
                     </div>
                 </div>
 
-                <!-- KARTU STATISTIK UTAMA (SOFT COLORFUL) -->
+                <!-- KARTU STATISTIK UTAMA -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div class="bg-gradient-to-br from-indigo-500/10 to-blue-500/5 p-5 rounded-3xl border border-indigo-100 shadow-sm flex items-center justify-between">
                         <div>
@@ -362,6 +363,7 @@
                                 <i data-lucide="shield-alert" class="w-4 h-4 text-amber-500"></i>
                                 Sanksi / SP Karyawan (<span id="txtTahunSanksi">2026</span>)
                             </h3>
+                            <!-- TOMBOL CATAT SANKSI HANYA DI TAMPILKAN UNTUK ADMIN -->
                             <button id="btnAddSanksiBtn" class="hidden text-xs bg-amber-50 text-amber-700 hover:bg-amber-100 px-3 py-1.5 rounded-xl font-medium transition-all" onclick="openAddSanksiModal()">
                                 + Catat Sanksi
                             </button>
@@ -422,7 +424,7 @@
         </div>
     </div>
 
-    <!-- MODAL INPUT SANKSI / SP (ADMIN) -->
+    <!-- MODAL INPUT SANKSI / SP (ADMIN ONLY) -->
     <div id="sanksiModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-xl space-y-4 border border-slate-100">
             <h3 class="font-bold text-slate-900 text-base">+ Catat Sanksi Karyawan</h3>
@@ -496,9 +498,12 @@
             document.getElementById('mainSection').classList.remove('hidden');
             
             const nameDisplay = currentUser.name_user || currentUser.nama_user || 'User';
-            document.getElementById('userDisplay').innerHTML = `Halo, <strong class="text-slate-800">${nameDisplay}</strong> <span class="bg-indigo-50 text-indigo-700 border border-indigo-100 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ml-1">${currentUser.role}</span>`;
+            const userRole = (currentUser.role || '').toLowerCase(); // Konversi ke lowercase untuk kehandalan
 
-            if (currentUser.role === 'admin') {
+            document.getElementById('userDisplay').innerHTML = `Halo, <strong class="text-slate-800">${nameDisplay}</strong> <span class="bg-indigo-50 text-indigo-700 border border-indigo-100 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ml-1">${userRole}</span>`;
+
+            // PERBAIKAN LOGIKA HAK AKSES STRICT ADMIN VS STAF
+            if (userRole === 'admin') {
                 document.getElementById('tabUserBtn').classList.remove('hidden');
                 document.getElementById('addEmployeeSection').classList.remove('hidden');
                 document.getElementById('btnAddSanksiBtn').classList.remove('hidden');
@@ -506,6 +511,7 @@
                 document.getElementById('thAksiResign').classList.remove('hidden');
                 fetchUsers();
             } else {
+                // APABILA ROLE ADALAH STAF ATAU SELAIN ADMIN
                 document.getElementById('tabUserBtn').classList.add('hidden');
                 document.getElementById('addEmployeeSection').classList.add('hidden');
                 document.getElementById('btnAddSanksiBtn').classList.add('hidden');
@@ -513,13 +519,19 @@
                 document.getElementById('thAksiResign').classList.add('hidden');
             }
 
-            // DEFAULT HALAMAN UTAMA: DATA KARYAWAN AKTIF
+            // DEFAULT TAB: DATA KARYAWAN AKTIF
             switchTab('active');
             fetchEmployees();
             lucide.createIcons();
         }
 
         function switchTab(tabName) {
+            // Pastikan Staf tidak bisa mengakses tab user secara langsung
+            const userRole = (currentUser?.role || '').toLowerCase();
+            if (tabName === 'user' && userRole !== 'admin') {
+                tabName = 'active';
+            }
+
             document.getElementById('pageDashboard').classList.add('hidden');
             document.getElementById('pageActive').classList.add('hidden');
             document.getElementById('pageResign').classList.add('hidden');
@@ -574,8 +586,10 @@
             showLogin();
         }
 
-        // --- MANAJEMEN USER ---
+        // --- MANAJEMEN USER (KHUSUS ADMIN) ---
         async function fetchUsers() {
+            if ((currentUser?.role || '').toLowerCase() !== 'admin') return;
+
             const tbody = document.getElementById('userTableBody');
             const { data, error } = await supabaseClient.from('users_app').select('*').order('id', { ascending: true });
             
@@ -591,7 +605,7 @@
                     <tr class="hover:bg-slate-50/50 transition-colors">
                         <td class="py-3.5 px-5 font-bold text-slate-800">${u.username}</td>
                         <td class="py-3.5 px-5 text-slate-600">${displayName}</td>
-                        <td class="py-3.5 px-5"><span class="bg-purple-50 text-purple-700 font-semibold px-2.5 py-1 rounded-full text-[11px]">${u.role.toUpperCase()}</span></td>
+                        <td class="py-3.5 px-5"><span class="bg-purple-50 text-purple-700 font-semibold px-2.5 py-1 rounded-full text-[11px]">${(u.role || '').toUpperCase()}</span></td>
                         <td class="py-3.5 px-5 text-right">
                             ${isSelf ? '<span class="text-xs text-slate-400">(Akun Anda)</span>' : `<button class="bg-rose-50 text-rose-600 hover:bg-rose-100 px-3 py-1 rounded-lg font-medium transition-all" onclick="deleteUser(${u.id}, '${u.username}')">Hapus User</button>`}
                         </td>
@@ -602,6 +616,8 @@
 
         document.getElementById('addUserForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            if ((currentUser?.role || '').toLowerCase() !== 'admin') return;
+
             const newUser = {
                 username: document.getElementById('newUsername').value,
                 password: document.getElementById('newPassword').value,
@@ -620,6 +636,7 @@
         });
 
         async function deleteUser(id, username) {
+            if ((currentUser?.role || '').toLowerCase() !== 'admin') return;
             if (confirm(`Yakin ingin menghapus akses akun ${username}?`)) {
                 const { error } = await supabaseClient.from('users_app').delete().eq('id', id);
                 if (error) alert('Gagal menghapus user: ' + error.message);
@@ -726,7 +743,7 @@
                 return;
             }
 
-            const isAdmin = currentUser && currentUser.role === 'admin';
+            const isAdmin = currentUser && (currentUser.role || '').toLowerCase() === 'admin';
 
             tbody.innerHTML = dataList.map(e => {
                 let badgeStyle = "bg-slate-100 text-slate-700 border-slate-200";
@@ -768,7 +785,7 @@
                 return;
             }
 
-            const isAdmin = currentUser && currentUser.role === 'admin';
+            const isAdmin = currentUser && (currentUser.role || '').toLowerCase() === 'admin';
 
             tbody.innerHTML = dataList.map(e => `
                 <tr class="hover:bg-slate-50/60 transition-colors opacity-75">
@@ -787,9 +804,11 @@
             `).join('');
         }
 
-        // SIMPAN & UPLOAD FOTO
+        // SIMPAN & UPLOAD FOTO (ADMIN ONLY)
         document.getElementById('employeeForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            if ((currentUser?.role || '').toLowerCase() !== 'admin') return;
+
             const editId = document.getElementById('editEmployeeId').value;
             const fileInput = document.getElementById('fotoFile');
             let fotoUrl = null;
@@ -869,6 +888,8 @@
 
         // SANKSI MODAL
         function openAddSanksiModal() {
+            if ((currentUser?.role || '').toLowerCase() !== 'admin') return;
+
             const selectEmp = document.getElementById('sanksiKaryawanId');
             const activeEmps = allEmployees.filter(e => e.status !== 'Resign');
             selectEmp.innerHTML = activeEmps.map(e => `<option value="${e.id}">${e.nama} (${e.nik})</option>`).join('');
@@ -881,6 +902,8 @@
 
         document.getElementById('sanksiForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            if ((currentUser?.role || '').toLowerCase() !== 'admin') return;
+
             const payload = {
                 karyawan_id: parseInt(document.getElementById('sanksiKaryawanId').value),
                 jenis_sanksi: document.getElementById('sanksiJenis').value,
@@ -899,6 +922,8 @@
         });
 
         function editEmployee(id) {
+            if ((currentUser?.role || '').toLowerCase() !== 'admin') return;
+
             const emp = allEmployees.find(e => e.id === id);
             if (!emp) return;
 
@@ -927,6 +952,8 @@
         }
 
         async function markAsResign(id, nama) {
+            if ((currentUser?.role || '').toLowerCase() !== 'admin') return;
+
             if (confirm(`Pindahkan data ${nama} ke daftar Karyawan Resign / Keluar?`)) {
                 const { error } = await supabaseClient.from('karyawan').update({ status: 'Resign' }).eq('id', id);
                 if (error) alert('Gagal memindahkan data: ' + error.message);
@@ -935,6 +962,8 @@
         }
 
         async function deletePermanently(id, nama) {
+            if ((currentUser?.role || '').toLowerCase() !== 'admin') return;
+
             if (confirm(`HAPUS PERMANEN data ${nama} dari database?`)) {
                 const { error } = await supabaseClient.from('karyawan').delete().eq('id', id);
                 if (error) alert('Gagal menghapus: ' + error.message);
