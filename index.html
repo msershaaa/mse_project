@@ -592,20 +592,30 @@
         });
 
         // MODAL DETAIL KARYAWAN (POINT 2)
-        function openDetailModal(id) {
-            const emp = allEmployees.find(e => e.id === id);
-            if (!emp) return;
+function openDetailModal(id) {
+    const emp = allEmployees.find(e => e.id === id);
+    if (!emp) return;
 
-            document.getElementById('detailNama').innerText = emp.nama;
-            document.getElementById('detailNik').innerText = `NIK: ${emp.nik}`;
-            document.getElementById('detailJabatan').innerText = emp.jabatan;
-            document.getElementById('detailDept').innerText = emp.departemen;
-            document.getElementById('detailStatus').innerText = emp.status;
-            document.getElementById('detailHp').innerText = emp.no_hp;
-            document.getElementById('detailFoto').src = emp.foto_url || 'https://via.placeholder.com/100?text=No+Foto';
+    document.getElementById('detailNama').innerText = emp.nama;
+    document.getElementById('detailNik').innerText = `NIK: ${emp.nik}`;
+    document.getElementById('detailJabatan').innerText = emp.jabatan;
+    document.getElementById('detailDept').innerText = emp.departemen;
+    document.getElementById('detailStatus').innerText = emp.status;
+    document.getElementById('detailHp').innerText = emp.no_hp;
+    
+    // Avatar default berbasis inisial nama dari UI Avatars
+    const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(emp.nama)}&background=2563eb&color=fff`;
+    
+    const imgElement = document.getElementById('detailFoto');
+    imgElement.src = emp.foto_url ? emp.foto_url : defaultAvatar;
+    
+    // Jika link foto dari database error/broken, otomatis pakai avatar inisial
+    imgElement.onerror = function() {
+        this.src = defaultAvatar;
+    };
 
-            document.getElementById('detailModal').classList.remove('hidden');
-        }
+    document.getElementById('detailModal').classList.remove('hidden');
+}
 
         function closeModal() {
             document.getElementById('detailModal').classList.add('hidden');
