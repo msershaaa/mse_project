@@ -4,191 +4,266 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Database Karyawan</title>
+
     <!-- Supabase JS Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
     <style>
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #f4f6f9; margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 1100px; margin: 0 auto; }
-        .auth-card { max-width: 380px; margin: 80px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        h1, h2, h3, h4 { color: #1e293b; margin-bottom: 15px; }
-        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
-        label { font-weight: 600; font-size: 14px; margin-bottom: 5px; display: block; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; margin-bottom: 10px; }
-        button { background-color: #2563eb; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        button:hover { background-color: #1d4ed8; }
-        button.warning { background-color: #f59e0b; }
-        button.warning:hover { background-color: #d97706; }
-        button.danger { background-color: #ef4444; }
-        button.danger:hover { background-color: #dc2626; }
-        button.secondary { background-color: #64748b; }
-        button.secondary:hover { background-color: #475569; }
-        .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        
-        /* NAVIGATION TABS */
-        .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 5px; flex-wrap: wrap; }
-        .tab-btn { background: transparent; color: #64748b; border: none; padding: 10px 20px; font-size: 15px; font-weight: 600; border-radius: 6px 6px 0 0; cursor: pointer; transition: all 0.2s; }
-        .tab-btn:hover { background-color: #e2e8f0; color: #1e293b; }
-        .tab-btn.active { background-color: #2563eb; color: white; }
-
-        /* WIDGET STATISTIK DASHBOARD */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .stat-card { background: white; padding: 18px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border-left: 5px solid #2563eb; }
-        .stat-card.resign { border-left-color: #ef4444; }
-        .stat-card.sanksi { border-left-color: #f59e0b; }
-        .stat-card.dept { border-left-color: #10b981; }
-        .stat-number { font-size: 28px; font-weight: bold; color: #0f172a; margin-top: 5px; }
-
-        /* LIST DISTRIBUSI */
-        .stat-list-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed #e2e8f0; font-size: 14px; }
-        .stat-list-item:last-child { border-bottom: none; }
-
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
-        th { background-color: #f8fafc; color: #475569; }
-        .badge { padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
-        .badge-tetap { background-color: #dcfce7; color: #15803d; }
-        .badge-kontrak { background-color: #fef9c3; color: #a16207; }
-        .badge-magang { background-color: #e0f2fe; color: #0369a1; }
-        .badge-resign { background-color: #fee2e2; color: #991b1b; }
-        .badge-role { background-color: #e2e8f0; color: #334155; font-size: 11px; padding: 2px 6px; border-radius: 4px; }
-        .hidden { display: none !important; }
-        .action-btns { display: flex; gap: 5px; }
-
-        /* MODAL */
-        .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index: 1000; }
-        .modal-card { background: white; width: 90%; max-width: 500px; padding: 25px; border-radius: 12px; max-height: 90vh; overflow-y: auto; }
-        .profile-img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #2563eb; margin: 0 auto 15px; display: block; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
     </style>
 </head>
-<body>
+<body class="bg-[#FAF9F6] text-slate-800 antialiased min-h-screen">
 
-    <!-- HALAMAN LOGIN -->
-    <div id="loginSection" class="auth-card">
-        <h2 style="text-align: center;">Login Sistem</h2>
-        <form id="loginForm">
-            <label>Username:</label>
-            <input type="text" id="loginUsername" placeholder="Masukkan username" required>
-            
-            <label>Password:</label>
-            <input type="password" id="loginPassword" placeholder="Masukkan password" required>
-            
-            <button type="submit" style="width: 100%; margin-top: 10px;">Masuk</button>
-        </form>
+    <!-- ================= HALAMAN LOGIN ================= -->
+    <div id="loginSection" class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 w-full max-w-md">
+            <div class="flex flex-col items-center mb-6">
+                <div class="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white mb-3 shadow-md shadow-indigo-100">
+                    <i data-lucide="building-2" class="w-6 h-6"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-900">Login Sistem</h2>
+                <p class="text-xs text-slate-400 mt-1">Masukan akun untuk mengelola database karyawan</p>
+            </div>
+
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">Username</label>
+                    <input type="text" id="loginUsername" placeholder="Masukkan username" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1.5">Password</label>
+                    <input type="password" id="loginPassword" placeholder="Masukkan password" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-xl text-sm shadow-sm shadow-indigo-200 transition-all mt-2">
+                    Masuk ke Sistem
+                </button>
+            </form>
+        </div>
     </div>
 
-    <!-- HALAMAN UTAMA -->
-    <div id="mainSection" class="container hidden">
-        <!-- HEADER -->
-        <div class="header-bar card">
-            <div>
-                <h1 style="margin: 0;">Sistem Database Karyawan</h1>
-                <small id="userDisplay" style="color: #64748b;"></small>
-            </div>
-            <button onclick="logout()" class="danger" style="padding: 10px 15px;">Logout</button>
-        </div>
+    <!-- ================= HALAMAN UTAMA ================= -->
+    <div id="mainSection" class="hidden min-h-screen flex flex-col">
 
-        <!-- TAB MENU NAVIGASI -->
-        <div class="nav-tabs">
-            <button id="tabDashboardBtn" class="tab-btn active" onclick="switchTab('dashboard')">📊 Dashboard & Statistik</button>
-            <button id="tabActiveBtn" class="tab-btn" onclick="switchTab('active')">👥 Data Karyawan Aktif</button>
-            <button id="tabResignBtn" class="tab-btn" onclick="switchTab('resign')">🛑 Karyawan Keluar / Resign</button>
-            <button id="tabUserBtn" class="tab-btn hidden" onclick="switchTab('user')">👤 Kelola Akun User</button>
-        </div>
-
-        <!-- ================= PAGE 0: DASHBOARD STATISTIK ================= -->
-        <div id="pageDashboard">
-            <div class="card" style="display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap;">
-                <div>
-                    <h2 style="margin:0;">Monitoring & Analitik Karyawan</h2>
-                    <small style="color: #64748b;">Statistik performa dan kedisiplinan karyawan berbasis tahunan.</small>
-                </div>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <label style="margin:0; font-weight:bold;">Tahun Monitoring:</label>
-                    <select id="selectTahunFilter" style="width: 120px; margin:0;" onchange="loadDashboardStats()">
-                        <option value="2026">2026</option>
-                        <option value="2025">2025</option>
-                        <option value="2024">2024</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- KARTU STATISTIK UTAMA -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <small style="color: #64748b; font-weight: 600;">KARYAWAN AKTIF</small>
-                    <div id="statTotalActive" class="stat-number">0</div>
-                </div>
-                <div class="stat-card resign">
-                    <small style="color: #64748b; font-weight: 600;">KARYAWAN RESIGN</small>
-                    <div id="statTotalResign" class="stat-number">0</div>
-                </div>
-                <div class="stat-card sanksi">
-                    <small style="color: #64748b; font-weight: 600;">KARYAWAN KENA SANKSI (SP)</small>
-                    <div id="statTotalSanksi" class="stat-number" style="color: #d97706;">0</div>
-                </div>
-                <div class="stat-card dept">
-                    <small style="color: #64748b; font-weight: 600;">DEPARTEMEN TERBANYAK</small>
-                    <div id="statTopDept" class="stat-number" style="font-size: 18px; margin-top: 10px;">-</div>
-                </div>
-            </div>
-
-            <!-- RINCIAN STATISTIK JABATAN & SANKSI -->
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
-                <!-- JUMLAH PER JABATAN -->
-                <div class="card">
-                    <h3>👔 Jumlah Karyawan Per Jabatan</h3>
-                    <div id="listJabatanStats">
-                        <small style="color: #64748b;">Memuat data...</small>
+        <!-- HEADER BAR -->
+        <header class="bg-white border-b border-slate-100 sticky top-0 z-30">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-100">
+                        <i data-lucide="building-2" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-slate-900 text-base leading-tight">Database Karyawan</h1>
+                        <span id="userDisplay" class="text-xs text-slate-500"></span>
                     </div>
                 </div>
 
-                <!-- RIWAYAT SANKSI KARYAWAN -->
-                <div class="card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <h3 style="margin: 0;">⚠️ Sanksi / SP Karyawan (<span id="txtTahunSanksi">2026</span>)</h3>
-                        <button id="btnAddSanksiBtn" class="warning hidden" style="font-size: 12px; padding: 5px 10px;" onclick="openAddSanksiModal()">+ Catat Sanksi</button>
+                <button onclick="logout()" class="flex items-center gap-2 text-xs font-medium text-rose-600 bg-rose-50 hover:bg-rose-100 px-3.5 py-2 rounded-xl transition-all">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- CONTAINER UTAMA -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-1 space-y-6">
+
+            <!-- TAB MENU NAVIGASI -->
+            <div class="flex items-center gap-2 border-b border-slate-200/60 pb-3 overflow-x-auto">
+                <button id="tabDashboardBtn" class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 text-white shadow-sm transition-all whitespace-nowrap" onclick="switchTab('dashboard')">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                    <span>Dashboard & Statistik</span>
+                </button>
+                <button id="tabActiveBtn" class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium text-slate-600 hover:bg-white transition-all whitespace-nowrap" onclick="switchTab('active')">
+                    <i data-lucide="users" class="w-4 h-4"></i>
+                    <span>Data Karyawan Aktif</span>
+                </button>
+                <button id="tabResignBtn" class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium text-slate-600 hover:bg-white transition-all whitespace-nowrap" onclick="switchTab('resign')">
+                    <i data-lucide="user-minus" class="w-4 h-4"></i>
+                    <span>Karyawan Keluar / Resign</span>
+                </button>
+                <button id="tabUserBtn" class="hidden flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium text-slate-600 hover:bg-white transition-all whitespace-nowrap" onclick="switchTab('user')">
+                    <i data-lucide="shield-check" class="w-4 h-4"></i>
+                    <span>Kelola Akun User</span>
+                </button>
+            </div>
+
+            <!-- ================= PAGE 0: DASHBOARD STATISTIK ================= -->
+            <div id="pageDashboard" class="space-y-6">
+                <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900">Monitoring & Analitik Karyawan</h2>
+                        <p class="text-xs text-slate-400 mt-0.5">Statistik performa dan kedisiplinan karyawan berbasis tahunan.</p>
                     </div>
-                    <table style="margin-top: 0;">
-                        <thead>
-                            <tr>
-                                <th>Karyawan</th>
-                                <th>Sanksi</th>
-                                <th>Ket</th>
-                            </tr>
-                        </thead>
-                        <tbody id="sanksiTableBody">
-                            <tr><td colspan="3">Memuat sanksi...</td></tr>
-                        </tbody>
-                    </table>
+                    <div class="flex items-center gap-3">
+                        <label class="text-xs font-semibold text-slate-600">Tahun Monitoring:</label>
+                        <select id="selectTahunFilter" onchange="loadDashboardStats()" class="bg-slate-50 border border-slate-200 text-xs rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                            <option value="2026">2026</option>
+                            <option value="2025">2025</option>
+                            <option value="2024">2024</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- KARTU STATISTIK UTAMA -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+                        <div>
+                            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Karyawan Aktif</span>
+                            <div id="statTotalActive" class="text-2xl font-bold text-slate-900 mt-1">0</div>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                            <i data-lucide="user-check" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+                        <div>
+                            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Karyawan Resign</span>
+                            <div id="statTotalResign" class="text-2xl font-bold text-rose-600 mt-1">0</div>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+                            <i data-lucide="user-x" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+                        <div>
+                            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Kena Sanksi (SP)</span>
+                            <div id="statTotalSanksi" class="text-2xl font-bold text-amber-600 mt-1">0</div>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                            <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+                        <div>
+                            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Dept Terbanyak</span>
+                            <div id="statTopDept" class="text-sm font-bold text-emerald-600 mt-1">-</div>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                            <i data-lucide="briefcase" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RINCIAN STATISTIK JABATAN & SANKSI -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+                        <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                            <i data-lucide="layers" class="w-4 h-4 text-indigo-600"></i>
+                            Jumlah Karyawan Per Jabatan
+                        </h3>
+                        <div id="listJabatanStats" class="divide-y divide-slate-100 text-xs">
+                            <span class="text-slate-400">Memuat data...</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                                <i data-lucide="shield-alert" class="w-4 h-4 text-amber-500"></i>
+                                Sanksi / SP Karyawan (<span id="txtTahunSanksi">2026</span>)
+                            </h3>
+                            <button id="btnAddSanksiBtn" class="hidden text-xs bg-amber-50 text-amber-700 hover:bg-amber-100 px-3 py-1.5 rounded-lg font-medium transition-all" onclick="openAddSanksiModal()">
+                                + Catat Sanksi
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead>
+                                    <tr class="text-slate-400 border-b border-slate-100">
+                                        <th class="pb-2">Karyawan</th>
+                                        <th class="pb-2">Sanksi</th>
+                                        <th class="pb-2">Ket</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sanksiTableBody" class="divide-y divide-slate-100">
+                                    <tr><td colspan="3" class="py-3 text-slate-400">Memuat sanksi...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- ================= PAGE 1: KARYAWAN AKTIF ================= -->
-        <div id="pageActive" class="hidden">
-            <!-- FORM TAMBAH / EDIT KARYAWAN (ADMIN ONLY) -->
-            <div id="addEmployeeSection" class="card hidden">
-                <h2 id="formTitle">+ Tambah Data Karyawan</h2>
-                <form id="employeeForm">
-                    <input type="hidden" id="editEmployeeId">
-                    <div class="form-grid">
-                        <div>
-                            <label>NIK Karyawan:</label>
-                            <input type="text" id="nik" placeholder="Contoh: K-202601" required>
+            <!-- ================= PAGE 1: KARYAWAN AKTIF ================= -->
+            <div id="pageActive" class="hidden space-y-6">
+                <!-- FORM TAMBAH / EDIT KARYAWAN (ADMIN ONLY) -->
+                <div id="addEmployeeSection" class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4 hidden">
+                    <h2 id="formTitle" class="text-base font-bold text-slate-900">+ Tambah Data Karyawan</h2>
+                    <form id="employeeForm" class="space-y-4">
+                        <input type="hidden" id="editEmployeeId">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
+                            <div>
+                                <label class="block font-semibold text-slate-600 mb-1">NIK Karyawan:</label>
+                                <input type="text" id="nik" placeholder="Contoh: K-202601" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-600 mb-1">Nama Lengkap:</label>
+                                <input type="text" id="nama" placeholder="Contoh: Budi Santoso" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-600 mb-1">Jabatan:</label>
+                                <input type="text" id="jabatan" placeholder="Contoh: Operator / Supervisor" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-600 mb-1">Departemen:</label>
+                                <select id="departemen" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                                    <option value="Operational">Operational</option>
+                                    <option value="Maintenance">Maintenance</option>
+                                    <option value="HR & Legal">HR & Legal</option>
+                                    <option value="Finance">Finance</option>
+                                    <option value="HSE">HSE</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-600 mb-1">Status Kerja:</label>
+                                <select id="status" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                                    <option value="Tetap">Tetap</option>
+                                    <option value="Kontrak">Kontrak</option>
+                                    <option value="Magang">Magang</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-600 mb-1">Nomor HP / WA:</label>
+                                <input type="text" id="noHp" placeholder="0812xxxxxxxx" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                            </div>
+                            <div class="sm:col-span-2 lg:col-span-3">
+                                <label class="block font-semibold text-slate-600 mb-1">Foto Profil (Opsional):</label>
+                                <input type="file" id="fotoFile" accept="image/*" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-500 file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100">
+                            </div>
                         </div>
-                        <div>
-                            <label>Nama Lengkap:</label>
-                            <input type="text" id="nama" placeholder="Contoh: Budi Santoso" required>
+                        <div class="flex items-center gap-2 pt-2">
+                            <button type="submit" id="btnSubmitEmployee" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-xl text-xs shadow-sm transition-all">
+                                Simpan Data Karyawan
+                            </button>
+                            <button type="button" id="btnCancelEdit" class="hidden bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium px-4 py-2 rounded-xl text-xs transition-all" onclick="resetForm()">
+                                Batal Edit
+                            </button>
                         </div>
-                        <div>
-                            <label>Jabatan:</label>
-                            <input type="text" id="jabatan" placeholder="Contoh: Operator / Supervisor" required>
-                        </div>
-                        <div>
-                            <label>Departemen:</label>
-                            <select id="departemen">
+                    </form>
+                </div>
+
+                <!-- TABEL KARYAWAN AKTIF & FILTER -->
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                    <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <h2 class="text-base font-bold text-slate-900">Daftar Karyawan Aktif</h2>
+                        <div class="flex flex-col sm:flex-row items-center gap-2">
+                            <input type="text" id="searchBox" placeholder="Cari nama / NIK..." onkeyup="filterEmployees()" class="w-full sm:w-64 px-3.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                            <select id="filterDept" onchange="filterEmployees()" class="w-full sm:w-auto px-3.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                                <option value="">-- Semua Departemen --</option>
                                 <option value="Operational">Operational</option>
                                 <option value="Maintenance">Maintenance</option>
                                 <option value="HR & Legal">HR & Legal</option>
@@ -196,182 +271,195 @@
                                 <option value="HSE">HSE</option>
                             </select>
                         </div>
-                        <div>
-                            <label>Status Kerja:</label>
-                            <select id="status">
-                                <option value="Tetap">Tetap</option>
-                                <option value="Kontrak">Kontrak</option>
-                                <option value="Magang">Magang</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label>Nomor HP / WA:</label>
-                            <input type="text" id="noHp" placeholder="0812xxxxxxxx" required>
-                        </div>
-                        <div>
-                            <label>Foto Profil (Opsional):</label>
-                            <input type="file" id="fotoFile" accept="image/*">
-                        </div>
                     </div>
-                    <button type="submit" id="btnSubmitEmployee">Simpan Data Karyawan</button>
-                    <button type="button" id="btnCancelEdit" class="secondary hidden" onclick="resetForm()">Batal Edit</button>
-                </form>
-            </div>
 
-            <!-- TABEL KARYAWAN AKTIF & FILTER -->
-            <div class="card">
-                <h2>Daftar Karyawan Aktif</h2>
-                <div class="form-grid" style="grid-template-columns: 2fr 1fr; margin-bottom: 10px;">
-                    <input type="text" id="searchBox" placeholder="Cari berdasarkan nama/NIK..." onkeyup="filterEmployees()">
-                    <select id="filterDept" onchange="filterEmployees()">
-                        <option value="">-- Semua Departemen --</option>
-                        <option value="Operational">Operational</option>
-                        <option value="Maintenance">Maintenance</option>
-                        <option value="HR & Legal">HR & Legal</option>
-                        <option value="Finance">Finance</option>
-                        <option value="HSE">HSE</option>
-                    </select>
-                </div>
-                
-                <table>
-                    <thead>
-                        <tr>
-                            <th>NIK</th>
-                            <th>Nama</th>
-                            <th>Jabatan</th>
-                            <th>Departemen</th>
-                            <th>Status</th>
-                            <th>No HP</th>
-                            <th id="thAksi">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="employeeTableBody">
-                        <tr><td colspan="7" style="text-align: center;">Memuat data...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- ================= PAGE 2: KARYAWAN RESIGN ================= -->
-        <div id="pageResign" class="hidden">
-            <div class="card">
-                <h2 style="color: #991b1b;">Daftar Karyawan Keluar / Resign</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>NIK</th>
-                            <th>Nama</th>
-                            <th>Jabatan</th>
-                            <th>Departemen</th>
-                            <th>Status Terakhir</th>
-                            <th>No HP</th>
-                            <th id="thAksiResign">Aksi Admin</th>
-                        </tr>
-                    </thead>
-                    <tbody id="resignTableBody">
-                        <tr><td colspan="7" style="text-align: center;">Memuat data...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- ================= PAGE 3: KELOLA AKUN USER (ADMIN ONLY) ================= -->
-        <div id="pageUser" class="hidden">
-            <div class="card" style="border-left: 4px solid #2563eb;">
-                <h3>+ Buat Akses User Baru</h3>
-                <form id="addUserForm">
-                    <div class="form-grid">
-                        <div>
-                            <label>Username Baru:</label>
-                            <input type="text" id="newUsername" placeholder="Contoh: staf_operasional" required>
-                        </div>
-                        <div>
-                            <label>Password:</label>
-                            <input type="text" id="newPassword" placeholder="Contoh: pass123" required>
-                        </div>
-                        <div>
-                            <label>Nama Pengguna:</label>
-                            <input type="text" id="newNamaUser" placeholder="Contoh: Siti Aisyah" required>
-                        </div>
-                        <div>
-                            <label>Akses / Role:</label>
-                            <select id="newRole">
-                                <option value="staf">Staf (Akses Terbatas / Read-Only)</option>
-                                <option value="admin">Admin (Akses Full)</option>
-                            </select>
-                        </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="bg-slate-50/50 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-100">
+                                    <th class="py-3 px-5">NIK</th>
+                                    <th class="py-3 px-5">Nama</th>
+                                    <th class="py-3 px-5">Jabatan</th>
+                                    <th class="py-3 px-5">Departemen</th>
+                                    <th class="py-3 px-5">Status</th>
+                                    <th class="py-3 px-5">No HP</th>
+                                    <th id="thAksi" class="py-3 px-5 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="employeeTableBody" class="divide-y divide-slate-100">
+                                <tr><td colspan="7" class="py-4 text-center text-slate-400">Memuat data...</td></tr>
+                            </tbody>
+                        </table>
                     </div>
-                    <button type="submit">Buatkan User Baru</button>
-                </form>
-
-                <h4 style="margin-top: 25px; margin-bottom: 10px;">Daftar Akun Pengguna System</h4>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Username</th>
-                            <th>Nama Pengguna</th>
-                            <th>Role</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="userTableBody">
-                        <tr><td colspan="4">Memuat data user...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- MODAL DETAIL PROFILE KARYAWAN -->
-        <div id="detailModal" class="modal-overlay hidden">
-            <div class="modal-card">
-                <img id="detailFoto" src="" class="profile-img">
-                <h3 id="detailNama" style="text-align: center; margin-bottom: 5px;">Nama Karyawan</h3>
-                <p id="detailNik" style="text-align: center; color: #64748b; margin-top: 0;">NIK: -</p>
-                <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 15px 0;">
-                
-                <p><strong>Jabatan:</strong> <span id="detailJabatan">-</span></p>
-                <p><strong>Departemen:</strong> <span id="detailDept">-</span></p>
-                <p><strong>Status Kerja:</strong> <span id="detailStatus">-</span></p>
-                <p><strong>Nomor HP / WA:</strong> <span id="detailHp">-</span></p>
-                
-                <div style="margin-top: 20px; text-align: right;">
-                    <button class="secondary" onclick="closeModal()">Tutup</button>
                 </div>
             </div>
+
+            <!-- ================= PAGE 2: KARYAWAN RESIGN ================= -->
+            <div id="pageResign" class="hidden space-y-6">
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden p-5 space-y-4">
+                    <h2 class="text-base font-bold text-rose-600 flex items-center gap-2">
+                        <i data-lucide="user-minus" class="w-5 h-5"></i>
+                        Daftar Karyawan Keluar / Resign
+                    </h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="bg-slate-50/50 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-100">
+                                    <th class="py-3 px-5">NIK</th>
+                                    <th class="py-3 px-5">Nama</th>
+                                    <th class="py-3 px-5">Jabatan</th>
+                                    <th class="py-3 px-5">Departemen</th>
+                                    <th class="py-3 px-5">Status Terakhir</th>
+                                    <th class="py-3 px-5">No HP</th>
+                                    <th id="thAksiResign" class="py-3 px-5 text-right">Aksi Admin</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resignTableBody" class="divide-y divide-slate-100">
+                                <tr><td colspan="7" class="py-4 text-center text-slate-400">Memuat data...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= PAGE 3: KELOLA AKUN USER (ADMIN ONLY) ================= -->
+            <div id="pageUser" class="hidden space-y-6">
+                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-6">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900">+ Buat Akses User Baru</h3>
+                        <p class="text-xs text-slate-400">Tambahkan kredensial akun login untuk staf atau admin baru.</p>
+                    </div>
+
+                    <form id="addUserForm" class="space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+                            <div>
+                                <label class="block font-semibold text-slate-600 mb-1">Username Baru:</label>
+                                <input type="text" id="newUsername" placeholder="Contoh: staf_operasional" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-600 mb-1">Password:</label>
+                                <input type="text" id="newPassword" placeholder="Contoh: pass123" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-600 mb-1">Nama Pengguna:</label>
+                                <input type="text" id="newNamaUser" placeholder="Contoh: Siti Aisyah" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-600 mb-1">Akses / Role:</label>
+                                <select id="newRole" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                                    <option value="staf">Staf (Akses Terbatas / Read-Only)</option>
+                                    <option value="admin">Admin (Akses Full)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-xl text-xs shadow-sm transition-all">
+                            Buatkan User Baru
+                        </button>
+                    </form>
+
+                    <div class="pt-4 border-t border-slate-100">
+                        <h4 class="text-sm font-bold text-slate-800 mb-3">Daftar Akun Pengguna System</h4>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="bg-slate-50/50 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-100">
+                                        <th class="py-3 px-5">Username</th>
+                                        <th class="py-3 px-5">Nama Pengguna</th>
+                                        <th class="py-3 px-5">Role</th>
+                                        <th class="py-3 px-5 text-right">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="userTableBody" class="divide-y divide-slate-100">
+                                    <tr><td colspan="4" class="py-4 text-center text-slate-400">Memuat data user...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- MODAL DETAIL PROFILE KARYAWAN -->
+    <div id="detailModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-xl space-y-4">
+            <img id="detailFoto" src="" class="w-24 h-24 rounded-full object-cover ring-4 ring-indigo-50 mx-auto shadow-md">
+            
+            <div class="text-center">
+                <h3 id="detailNama" class="font-bold text-slate-900 text-base">Nama Karyawan</h3>
+                <p id="detailNik" class="text-xs text-slate-400 mt-0.5">NIK: -</p>
+            </div>
+
+            <div class="divide-y divide-slate-100 text-xs text-slate-600">
+                <div class="py-2 flex justify-between">
+                    <span class="text-slate-400">Jabatan</span>
+                    <span id="detailJabatan" class="font-medium text-slate-800">-</span>
+                </div>
+                <div class="py-2 flex justify-between">
+                    <span class="text-slate-400">Departemen</span>
+                    <span id="detailDept" class="font-medium text-slate-800">-</span>
+                </div>
+                <div class="py-2 flex justify-between">
+                    <span class="text-slate-400">Status Kerja</span>
+                    <span id="detailStatus" class="font-medium text-slate-800">-</span>
+                </div>
+                <div class="py-2 flex justify-between">
+                    <span class="text-slate-400">Nomor HP / WA</span>
+                    <span id="detailHp" class="font-medium text-slate-800">-</span>
+                </div>
+            </div>
+
+            <button class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2 rounded-xl text-xs transition-all" onclick="closeModal()">
+                Tutup
+            </button>
         </div>
+    </div>
 
-        <!-- MODAL INPUT SANKSI / SP (ADMIN) -->
-        <div id="sanksiModal" class="modal-overlay hidden">
-            <div class="modal-card">
-                <h3>+ Catat Sanksi Karyawan</h3>
-                <form id="sanksiForm">
-                    <label>Pilih Karyawan:</label>
-                    <select id="sanksiKaryawanId" required></select>
+    <!-- MODAL INPUT SANKSI / SP (ADMIN) -->
+    <div id="sanksiModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-2xl p-6 shadow-xl space-y-4">
+            <h3 class="font-bold text-slate-900 text-base">+ Catat Sanksi Karyawan</h3>
+            
+            <form id="sanksiForm" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">Pilih Karyawan:</label>
+                    <select id="sanksiKaryawanId" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20"></select>
+                </div>
 
-                    <label>Jenis Sanksi:</label>
-                    <select id="sanksiJenis" required>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">Jenis Sanksi:</label>
+                    <select id="sanksiJenis" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
                         <option value="Teguran Lisan">Teguran Lisan</option>
                         <option value="SP 1">Surat Peringatan 1 (SP 1)</option>
                         <option value="SP 2">Surat Peringatan 2 (SP 2)</option>
                         <option value="SP 3">Surat Peringatan 3 (SP 3)</option>
                     </select>
+                </div>
 
-                    <label>Tahun Pelanggaran:</label>
-                    <input type="number" id="sanksiTahun" value="2026" required>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">Tahun Pelanggaran:</label>
+                    <input type="number" id="sanksiTahun" value="2026" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                </div>
 
-                    <label>Keterangan / Alasan:</label>
-                    <input type="text" id="sanksiKet" placeholder="Contoh: Terlambat >3x dalam sebulan" required>
+                <div>
+                    <label class="block font-semibold text-slate-600 mb-1">Keterangan / Alasan:</label>
+                    <input type="text" id="sanksiKet" placeholder="Contoh: Terlambat >3x dalam sebulan" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                </div>
 
-                    <div style="margin-top: 20px; text-align: right; display: flex; gap: 10px; justify-content: flex-end;">
-                        <button type="button" class="secondary" onclick="closeSanksiModal()">Batal</button>
-                        <button type="submit">Simpan Sanksi</button>
-                    </div>
-                </form>
-            </div>
+                <div class="flex items-center justify-end gap-2 pt-2">
+                    <button type="button" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium px-4 py-2 rounded-xl text-xs transition-all" onclick="closeSanksiModal()">
+                        Batal
+                    </button>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-xl text-xs shadow-sm transition-all">
+                        Simpan Sanksi
+                    </button>
+                </div>
+            </form>
         </div>
-
     </div>
 
+    <!-- LOGIKA JAVASCRIPT UTAMA -->
     <script>
         const SUPABASE_URL = 'https://nnpihyxmckwetfaypsyk.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ucGloeXhtY2t3ZXRmYXlwc3lrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5ODY2OTgsImV4cCI6MjEwNTU2MjY5OH0.FLALmEmC8HqCj-VwLEYsIBk-RpGY22epjx04KlZymiI';
@@ -394,6 +482,7 @@
         function showLogin() {
             document.getElementById('loginSection').classList.remove('hidden');
             document.getElementById('mainSection').classList.add('hidden');
+            lucide.createIcons();
         }
 
         function showDashboard() {
@@ -401,7 +490,7 @@
             document.getElementById('mainSection').classList.remove('hidden');
             
             const nameDisplay = currentUser.name_user || currentUser.nama_user || 'User';
-            document.getElementById('userDisplay').innerHTML = `Halo, <strong>${nameDisplay}</strong> <span class="badge-role">${currentUser.role.toUpperCase()}</span>`;
+            document.getElementById('userDisplay').innerHTML = `Halo, <strong class="text-slate-800">${nameDisplay}</strong> <span class="bg-slate-100 text-slate-600 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ml-1">${currentUser.role}</span>`;
 
             if (currentUser.role === 'admin') {
                 document.getElementById('tabUserBtn').classList.remove('hidden');
@@ -420,6 +509,7 @@
 
             switchTab('dashboard');
             fetchEmployees();
+            lucide.createIcons();
         }
 
         function switchTab(tabName) {
@@ -428,23 +518,24 @@
             document.getElementById('pageResign').classList.add('hidden');
             document.getElementById('pageUser').classList.add('hidden');
 
-            document.getElementById('tabDashboardBtn').classList.remove('active');
-            document.getElementById('tabActiveBtn').classList.remove('active');
-            document.getElementById('tabResignBtn').classList.remove('active');
-            document.getElementById('tabUserBtn').classList.remove('active');
+            const tabBtns = ['tabDashboardBtn', 'tabActiveBtn', 'tabResignBtn', 'tabUserBtn'];
+            tabBtns.forEach(id => {
+                const btn = document.getElementById(id);
+                btn.className = "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium text-slate-600 hover:bg-white transition-all whitespace-nowrap";
+            });
 
             if (tabName === 'dashboard') {
                 document.getElementById('pageDashboard').classList.remove('hidden');
-                document.getElementById('tabDashboardBtn').classList.add('active');
+                document.getElementById('tabDashboardBtn').className = "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 text-white shadow-sm transition-all whitespace-nowrap";
             } else if (tabName === 'active') {
                 document.getElementById('pageActive').classList.remove('hidden');
-                document.getElementById('tabActiveBtn').classList.add('active');
+                document.getElementById('tabActiveBtn').className = "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 text-white shadow-sm transition-all whitespace-nowrap";
             } else if (tabName === 'resign') {
                 document.getElementById('pageResign').classList.remove('hidden');
-                document.getElementById('tabResignBtn').classList.add('active');
+                document.getElementById('tabResignBtn').className = "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 text-white shadow-sm transition-all whitespace-nowrap";
             } else if (tabName === 'user') {
                 document.getElementById('pageUser').classList.remove('hidden');
-                document.getElementById('tabUserBtn').classList.add('active');
+                document.getElementById('tabUserBtn').className = "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 text-white shadow-sm transition-all whitespace-nowrap";
             }
         }
 
@@ -482,7 +573,7 @@
             const { data, error } = await supabaseClient.from('users_app').select('*').order('id', { ascending: true });
             
             if (error) {
-                tbody.innerHTML = `<tr><td colspan="4">Gagal memuat user: ${error.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="py-3 text-slate-400">Gagal memuat user: ${error.message}</td></tr>`;
                 return;
             }
 
@@ -490,12 +581,12 @@
                 const displayName = u.name_user || u.nama_user || '-';
                 const isSelf = u.id === currentUser.id;
                 return `
-                    <tr>
-                        <td><strong>${u.username}</strong></td>
-                        <td>${displayName}</td>
-                        <td><span class="badge-role">${u.role.toUpperCase()}</span></td>
-                        <td>
-                            ${isSelf ? '<small style="color: #64748b;">(Akun Anda)</small>' : `<button class="danger" onclick="deleteUser(${u.id}, '${u.username}')">Hapus User</button>`}
+                    <tr class="hover:bg-slate-50/50 transition-colors">
+                        <td class="py-3 px-5 font-bold text-slate-800">${u.username}</td>
+                        <td class="py-3 px-5 text-slate-600">${displayName}</td>
+                        <td class="py-3 px-5"><span class="bg-slate-100 text-slate-700 font-semibold px-2 py-0.5 rounded-md text-[11px]">${u.role.toUpperCase()}</span></td>
+                        <td class="py-3 px-5 text-right">
+                            ${isSelf ? '<span class="text-xs text-slate-400">(Akun Anda)</span>' : `<button class="bg-rose-50 text-rose-600 hover:bg-rose-100 px-3 py-1 rounded-lg font-medium transition-all" onclick="deleteUser(${u.id}, '${u.username}')">Hapus User</button>`}
                         </td>
                     </tr>
                 `;
@@ -554,7 +645,6 @@
             loadDashboardStats();
         }
 
-        // OLAHI STATISTIK DASHBOARD
         function loadDashboardStats() {
             const selectedTahun = parseInt(document.getElementById('selectTahunFilter').value);
             document.getElementById('txtTahunSanksi').innerText = selectedTahun;
@@ -565,12 +655,10 @@
             document.getElementById('statTotalActive').innerText = activeList.length;
             document.getElementById('statTotalResign').innerText = resignList.length;
 
-            // Hitung Karyawan Kena Sanksi di tahun terpilih
             const sanksiTahunIni = allSanksi.filter(s => parseInt(s.tahun) === selectedTahun);
             const uniqueEmpSanksi = new Set(sanksiTahunIni.map(s => s.karyawan_id));
             document.getElementById('statTotalSanksi').innerText = `${uniqueEmpSanksi.size} Orang`;
 
-            // Hitung per Jabatan
             const jabatanCounts = {};
             const deptCounts = {};
             activeList.forEach(e => {
@@ -578,20 +666,18 @@
                 deptCounts[e.departemen] = (deptCounts[e.departemen] || 0) + 1;
             });
 
-            // Render List Jabatan
             const jabatanContainer = document.getElementById('listJabatanStats');
             if (Object.keys(jabatanCounts).length === 0) {
-                jabatanContainer.innerHTML = '<small style="color: #64748b;">Belum ada data jabatan.</small>';
+                jabatanContainer.innerHTML = '<span class="text-slate-400">Belum ada data jabatan.</span>';
             } else {
                 jabatanContainer.innerHTML = Object.entries(jabatanCounts).map(([jab, count]) => `
-                    <div class="stat-list-item">
-                        <span><strong>${jab}</strong></span>
-                        <span class="badge badge-magang">${count} Karyawan</span>
+                    <div class="py-2 flex justify-between items-center">
+                        <span class="font-medium text-slate-700">${jab}</span>
+                        <span class="bg-indigo-50 text-indigo-700 font-bold px-2 py-0.5 rounded-full text-[10px]">${count} Karyawan</span>
                     </div>
                 `).join('');
             }
 
-            // Departemen Terbanyak
             let maxDept = '-';
             let maxCount = 0;
             for (const [dept, count] of Object.entries(deptCounts)) {
@@ -602,19 +688,18 @@
             }
             document.getElementById('statTopDept').innerText = maxDept;
 
-            // Render Tabel Sanksi
             const sanksiTbody = document.getElementById('sanksiTableBody');
             if (sanksiTahunIni.length === 0) {
-                sanksiTbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Tidak ada sanksi di tahun ini.</td></tr>';
+                sanksiTbody.innerHTML = '<tr><td colspan="3" class="py-3 text-center text-slate-400">Tidak ada sanksi di tahun ini.</td></tr>';
             } else {
                 sanksiTbody.innerHTML = sanksiTahunIni.map(s => {
                     const emp = allEmployees.find(e => e.id === s.karyawan_id);
                     const empNama = emp ? emp.nama : 'Unknown';
                     return `
-                        <tr>
-                            <td><strong>${empNama}</strong></td>
-                            <td><span class="badge badge-resign">${s.jenis_sanksi}</span></td>
-                            <td><small>${s.keterangan}</small></td>
+                        <tr class="hover:bg-slate-50/50">
+                            <td class="py-2 font-semibold text-slate-800">${empNama}</td>
+                            <td class="py-2"><span class="bg-rose-50 text-rose-700 font-medium px-2 py-0.5 rounded-full text-[10px]">${s.jenis_sanksi}</span></td>
+                            <td class="py-2 text-slate-500">${s.keterangan}</td>
                         </tr>
                     `;
                 }).join('');
@@ -630,52 +715,65 @@
         function renderActiveTable(dataList) {
             const tbody = document.getElementById('employeeTableBody');
             if (dataList.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Belum ada data karyawan aktif.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" class="py-4 text-center text-slate-400">Belum ada data karyawan aktif.</td></tr>';
                 return;
             }
 
             const isAdmin = currentUser && currentUser.role === 'admin';
 
-            tbody.innerHTML = dataList.map(e => `
-                <tr>
-                    <td><strong>${e.nik}</strong></td>
-                    <td><a href="#" style="color: #2563eb; font-weight: 600; text-decoration: none;" onclick="openDetailModal(${e.id}); return false;">${e.nama}</a></td>
-                    <td>${e.jabatan}</td>
-                    <td>${e.departemen}</td>
-                    <td><span class="badge badge-${e.status.toLowerCase()}">${e.status}</span></td>
-                    <td>${e.no_hp}</td>
-                    ${isAdmin ? `
-                        <td>
-                            <div class="action-btns">
-                                <button class="warning" onclick="editEmployee(${e.id})">Edit</button>
-                                <button class="danger" onclick="markAsResign(${e.id}, '${e.nama}')">Resign</button>
-                            </div>
+            tbody.innerHTML = dataList.map(e => {
+                let badgeStyle = "bg-slate-100 text-slate-700";
+                if(e.status === 'Tetap') badgeStyle = "bg-emerald-50 text-emerald-700";
+                else if(e.status === 'Kontrak') badgeStyle = "bg-amber-50 text-amber-700";
+                else if(e.status === 'Magang') badgeStyle = "bg-sky-50 text-sky-700";
+
+                return `
+                    <tr class="hover:bg-slate-50/60 transition-colors">
+                        <td class="py-3.5 px-5 font-semibold text-slate-900">${e.nik}</td>
+                        <td class="py-3.5 px-5">
+                            <a href="#" class="font-bold text-indigo-600 hover:text-indigo-800" onclick="openDetailModal(${e.id}); return false;">${e.nama}</a>
                         </td>
-                    ` : ''}
-                </tr>
-            `).join('');
+                        <td class="py-3.5 px-5 text-slate-700 font-medium">${e.jabatan}</td>
+                        <td class="py-3.5 px-5 text-slate-500">${e.departemen}</td>
+                        <td class="py-3.5 px-5">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${badgeStyle}">
+                                ${e.status}
+                            </span>
+                        </td>
+                        <td class="py-3.5 px-5 text-slate-500">${e.no_hp}</td>
+                        ${isAdmin ? `
+                            <td class="py-3.5 px-5 text-right">
+                                <div class="flex items-center justify-end gap-1.5">
+                                    <button class="bg-amber-50 text-amber-700 hover:bg-amber-100 px-2.5 py-1 rounded-lg font-medium transition-all" onclick="editEmployee(${e.id})">Edit</button>
+                                    <button class="bg-rose-50 text-rose-600 hover:bg-rose-100 px-2.5 py-1 rounded-lg font-medium transition-all" onclick="markAsResign(${e.id}, '${e.nama}')">Resign</button>
+                                </div>
+                            </td>
+                        ` : ''}
+                    </tr>
+                `;
+            }).join('');
         }
 
         function renderResignTable(dataList) {
             const tbody = document.getElementById('resignTableBody');
             if (dataList.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Belum ada data karyawan resign.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" class="py-4 text-center text-slate-400">Belum ada data karyawan resign.</td></tr>';
                 return;
             }
 
             const isAdmin = currentUser && currentUser.role === 'admin';
 
             tbody.innerHTML = dataList.map(e => `
-                <tr style="background-color: #fafafa;">
-                    <td><strong>${e.nik}</strong></td>
-                    <td><del>${e.nama}</del></td>
-                    <td>${e.jabatan}</td>
-                    <td>${e.departemen}</td>
-                    <td><span class="badge badge-resign">Resign / Keluar</span></td>
-                    <td>${e.no_hp}</td>
+                <tr class="hover:bg-slate-50/60 transition-colors opacity-75">
+                    <td class="py-3.5 px-5 font-semibold text-slate-700">${e.nik}</td>
+                    <td class="py-3.5 px-5 font-semibold text-slate-500 line-through">${e.nama}</td>
+                    <td class="py-3.5 px-5 text-slate-500">${e.jabatan}</td>
+                    <td class="py-3.5 px-5 text-slate-500">${e.departemen}</td>
+                    <td class="py-3.5 px-5"><span class="bg-rose-50 text-rose-700 font-semibold px-2.5 py-0.5 rounded-full text-[11px]">Resign / Keluar</span></td>
+                    <td class="py-3.5 px-5 text-slate-500">${e.no_hp}</td>
                     ${isAdmin ? `
-                        <td>
-                            <button class="danger" onclick="deletePermanently(${e.id}, '${e.nama}')">Hapus Permanen</button>
+                        <td class="py-3.5 px-5 text-right">
+                            <button class="bg-rose-600 text-white hover:bg-rose-700 px-3 py-1 rounded-lg font-medium transition-all shadow-sm" onclick="deletePermanently(${e.id}, '${e.nama}')">Hapus Permanen</button>
                         </td>
                     ` : ''}
                 </tr>
@@ -750,7 +848,7 @@
             document.getElementById('detailStatus').innerText = emp.status;
             document.getElementById('detailHp').innerText = emp.no_hp;
             
-            const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(emp.nama)}&background=2563eb&color=fff`;
+            const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(emp.nama)}&background=6366f1&color=fff`;
             const imgElement = document.getElementById('detailFoto');
             imgElement.src = emp.foto_url ? emp.foto_url : defaultAvatar;
             imgElement.onerror = function() { this.src = defaultAvatar; };
@@ -852,6 +950,7 @@
             renderActiveTable(filtered);
         }
 
+        // Jalankan pengecekan sesi saat halaman dibuka
         checkSession();
     </script>
 </body>
