@@ -10,15 +10,17 @@
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #f4f6f9; margin: 0; padding: 20px; color: #333; }
         .container { max-width: 1000px; margin: 0 auto; }
-        h1 { text-align: center; color: #1e293b; margin-bottom: 25px; }
+        .auth-card { max-width: 380px; margin: 80px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        h1, h2, h3 { color: #1e293b; margin-bottom: 15px; }
         .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
         label { font-weight: 600; font-size: 14px; margin-bottom: 5px; display: block; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; margin-bottom: 10px; }
         button { background-color: #2563eb; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; }
         button:hover { background-color: #1d4ed8; }
         button.danger { background-color: #ef4444; padding: 6px 12px; font-size: 12px; }
         button.danger:hover { background-color: #dc2626; }
+        .header-bar { display: flex; justify-content: space-between; align-items: center; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { text-align: left; padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
         th { background-color: #f8fafc; color: #475569; }
@@ -26,16 +28,67 @@
         .badge-tetap { background-color: #dcfce7; color: #15803d; }
         .badge-kontrak { background-color: #fef9c3; color: #a16207; }
         .badge-magang { background-color: #e0f2fe; color: #0369a1; }
-        .search-box { margin-bottom: 15px; }
+        .badge-role { background-color: #e2e8f0; color: #334155; font-size: 11px; padding: 2px 6px; border-radius: 4px; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Sistem Database Karyawan</h1>
+    <!-- HALAMAN LOGIN -->
+    <div id="loginSection" class="auth-card">
+        <h2 style="text-align: center;">Login Sistem</h2>
+        <form id="loginForm">
+            <label>Username:</label>
+            <input type="text" id="loginUsername" placeholder="Masukkan username" required>
+            
+            <label>Password:</label>
+            <input type="password" id="loginPassword" placeholder="Masukkan password" required>
+            
+            <button type="submit" style="width: 100%; margin-top: 10px;">Masuk</button>
+        </form>
+    </div>
 
-        <!-- FORM TAMBAH KARYAWAN -->
-        <div class="card">
+    <!-- HALAMAN UTAMA -->
+    <div id="mainSection" class="container hidden">
+        <div class="header-bar card">
+            <div>
+                <h1 style="margin: 0;">Sistem Database Karyawan</h1>
+                <small id="userDisplay" style="color: #64748b;"></small>
+            </div>
+            <button onclick="logout()" class="danger" style="padding: 10px 15px;">Logout</button>
+        </div>
+
+        <!-- FITUR KELOLA USER (HANYA DILIHAT OLEH ADMIN) -->
+        <div id="adminUserSection" class="card hidden" style="border-left: 4px solid #2563eb;">
+            <h3>+ Buat Akses User Baru (Fitur Admin)</h3>
+            <form id="addUserForm">
+                <div class="form-grid">
+                    <div>
+                        <label>Username Baru:</label>
+                        <input type="text" id="newUsername" placeholder="Contoh: staf_operasional" required>
+                    </div>
+                    <div>
+                        <label>Password:</label>
+                        <input type="text" id="newPassword" placeholder="Contoh: pass123" required>
+                    </div>
+                    <div>
+                        <label>Nama Pengguna:</label>
+                        <input type="text" id="newNamaUser" placeholder="Contoh: Siti Aisyah" required>
+                    </div>
+                    <div>
+                        <label>Akses / Role:</label>
+                        <select id="newRole">
+                            <option value="staf">Staf (Akses Terbatas / Read-Only)</option>
+                            <option value="admin">Admin (Akses Full)</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit">Buatkan User Baru</button>
+            </form>
+        </div>
+
+        <!-- FORM TAMBAH KARYAWAN (HANYA DILIHAT OLEH ADMIN) -->
+        <div id="addEmployeeSection" class="card hidden">
             <h2>+ Tambah Data Karyawan</h2>
             <form id="employeeForm">
                 <div class="form-grid">
@@ -78,10 +131,10 @@
             </form>
         </div>
 
-        <!-- TABEL DATA KARYAWAN -->
+        <!-- TABEL DATA KARYAWAN (BISA DILIHAT ADMIN & STAF) -->
         <div class="card">
             <h2>Daftar Karyawan</h2>
-            <input type="text" id="searchBox" class="search-box" placeholder="Cari berdasarkan nama/NIK..." onkeyup="filterEmployees()">
+            <input type="text" id="searchBox" placeholder="Cari berdasarkan nama/NIK..." onkeyup="filterEmployees()">
             
             <table>
                 <thead>
@@ -92,7 +145,7 @@
                         <th>Departemen</th>
                         <th>Status</th>
                         <th>No HP</th>
-                        <th>Aksi</th>
+                        <th id="thAksi">Aksi</th>
                     </tr>
                 </thead>
                 <tbody id="employeeTableBody">
@@ -108,9 +161,94 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ucGloeXhtY2t3ZXRmYXlwc3lrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5ODY2OTgsImV4cCI6MjEwNTU2MjY5OH0.FLALmEmC8HqCj-VwLEYsIBk-RpGY22epjx04KlZymiI';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        let currentUser = null;
         let allEmployees = [];
 
-        // Fetch Data Karyawan dari Supabase
+        // Cek Sesi Login dari LocalStorage
+        function checkSession() {
+            const savedUser = localStorage.getItem('userSession');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                showDashboard();
+            } else {
+                showLogin();
+            }
+        }
+
+        function showLogin() {
+            document.getElementById('loginSection').classList.remove('hidden');
+            document.getElementById('mainSection').classList.add('hidden');
+        }
+
+        function showDashboard() {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('mainSection').classList.remove('hidden');
+            
+            document.getElementById('userDisplay').innerHTML = `Halo, <strong>${currentUser.nama_user}</strong> <span class="badge-role">${currentUser.role.toUpperCase()}</span>`;
+
+            // Atur Hak Akses berdasarkan Role
+            if (currentUser.role === 'admin') {
+                document.getElementById('adminUserSection').classList.remove('hidden');
+                document.getElementById('addEmployeeSection').classList.remove('hidden');
+                document.getElementById('thAksi').classList.remove('hidden');
+            } else {
+                document.getElementById('adminUserSection').classList.add('hidden');
+                document.getElementById('addEmployeeSection').classList.add('hidden');
+                document.getElementById('thAksi').classList.add('hidden');
+            }
+
+            fetchEmployees();
+        }
+
+        // Handle Login Form
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const usernameInput = document.getElementById('loginUsername').value;
+            const passwordInput = document.getElementById('loginPassword').value;
+
+            const { data, error } = await supabase
+                .from('users_app')
+                .select('*')
+                .eq('username', usernameInput)
+                .eq('password', passwordInput)
+                .single();
+
+            if (error || !data) {
+                alert('Username atau password salah!');
+            } else {
+                currentUser = data;
+                localStorage.setItem('userSession', JSON.stringify(data));
+                showDashboard();
+            }
+        });
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('userSession');
+            currentUser = null;
+            showLogin();
+        }
+
+        // Admin: Buat User Baru
+        document.getElementById('addUserForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const newUser = {
+                username: document.getElementById('newUsername').value,
+                password: document.getElementById('newPassword').value,
+                nama_user: document.getElementById('newNamaUser').value,
+                role: document.getElementById('newRole').value
+            };
+
+            const { error } = await supabase.from('users_app').insert([newUser]);
+            if (error) {
+                alert('Gagal membuat user: ' + error.message);
+            } else {
+                alert(`User ${newUser.username} (${newUser.role}) berhasil dibuat!`);
+                this.reset();
+            }
+        });
+
+        // Fetch Data Karyawan
         async function fetchEmployees() {
             const tbody = document.getElementById('employeeTableBody');
             const { data, error } = await supabase
@@ -127,14 +265,14 @@
             renderTable(allEmployees);
         }
 
-        // Render Tabel
         function renderTable(dataList) {
             const tbody = document.getElementById('employeeTableBody');
-            
             if (dataList.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Belum ada data karyawan.</td></tr>';
                 return;
             }
+
+            const isAdmin = currentUser && currentUser.role === 'admin';
 
             tbody.innerHTML = dataList.map(e => `
                 <tr>
@@ -144,17 +282,14 @@
                     <td>${e.departemen}</td>
                     <td><span class="badge badge-${e.status.toLowerCase()}">${e.status}</span></td>
                     <td>${e.no_hp}</td>
-                    <td>
-                        <button class="danger" onclick="deleteEmployee(${e.id}, '${e.nama}')">Hapus</button>
-                    </td>
+                    ${isAdmin ? `<td><button class="danger" onclick="deleteEmployee(${e.id}, '${e.nama}')">Hapus</button></td>` : ''}
                 </tr>
             `).join('');
         }
 
-        // Simpan Karyawan Baru
+        // Admin: Simpan Karyawan
         document.getElementById('employeeForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-
             const newEmployee = {
                 nik: document.getElementById('nik').value,
                 nama: document.getElementById('nama').value,
@@ -165,41 +300,36 @@
             };
 
             const { error } = await supabase.from('karyawan').insert([newEmployee]);
-
             if (error) {
-                alert('Gagal menyimpan data: ' + error.message);
+                alert('Gagal menyimpan: ' + error.message);
             } else {
-                alert('Data Karyawan berhasil disimpan!');
+                alert('Data Karyawan disimpan!');
                 this.reset();
                 fetchEmployees();
             }
         });
 
-        // Hapus Data Karyawan
+        // Admin: Hapus Karyawan
         async function deleteEmployee(id, nama) {
-            if (confirm(`Apakah Anda yakin ingin menghapus data karyawan ${nama}?`)) {
+            if (confirm(`Yakin ingin menghapus ${nama}?`)) {
                 const { error } = await supabase.from('karyawan').delete().eq('id', id);
-                if (error) {
-                    alert('Gagal menghapus: ' + error.message);
-                } else {
-                    fetchEmployees();
-                }
+                if (error) alert('Gagal menghapus: ' + error.message);
+                else fetchEmployees();
             }
         }
 
-        // Fitur Pencarian Realtime
+        // Filter Cari
         function filterEmployees() {
             const keyword = document.getElementById('searchBox').value.toLowerCase();
             const filtered = allEmployees.filter(e => 
                 e.nama.toLowerCase().includes(keyword) || 
-                e.nik.toLowerCase().includes(keyword) ||
-                e.jabatan.toLowerCase().includes(keyword)
+                e.nik.toLowerCase().includes(keyword)
             );
             renderTable(filtered);
         }
 
-        // Jalankan saat pertama kali dibuka
-        fetchEmployees();
+        // Inisialisasi
+        checkSession();
     </script>
 </body>
 </html>
