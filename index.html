@@ -24,7 +24,14 @@
         button.danger:hover { background-color: #dc2626; }
         button.secondary { background-color: #64748b; }
         button.secondary:hover { background-color: #475569; }
-        .header-bar { display: flex; justify-content: space-between; align-items: center; }
+        .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        
+        /* NAVIGATION TABS */
+        .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 5px; }
+        .tab-btn { background: transparent; color: #64748b; border: none; padding: 10px 20px; font-size: 15px; font-weight: 600; border-radius: 6px 6px 0 0; cursor: pointer; transition: all 0.2s; }
+        .tab-btn:hover { background-color: #e2e8f0; color: #1e293b; }
+        .tab-btn.active { background-color: #2563eb; color: white; }
+
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { text-align: left; padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
         th { background-color: #f8fafc; color: #475569; }
@@ -56,6 +63,7 @@
 
     <!-- HALAMAN UTAMA -->
     <div id="mainSection" class="container hidden">
+        <!-- HEADER -->
         <div class="header-bar card">
             <div>
                 <h1 style="margin: 0;">Sistem Database Karyawan</h1>
@@ -64,139 +72,154 @@
             <button onclick="logout()" class="danger" style="padding: 10px 15px;">Logout</button>
         </div>
 
-        <!-- FITUR KELOLA USER (HANYA DILIHAT OLEH ADMIN) -->
-        <div id="adminUserSection" class="card hidden" style="border-left: 4px solid #2563eb;">
-            <h3>+ Buat Akses User Baru</h3>
-            <form id="addUserForm">
-                <div class="form-grid">
-                    <div>
-                        <label>Username Baru:</label>
-                        <input type="text" id="newUsername" placeholder="Contoh: staf_operasional" required>
-                    </div>
-                    <div>
-                        <label>Password:</label>
-                        <input type="text" id="newPassword" placeholder="Contoh: pass123" required>
-                    </div>
-                    <div>
-                        <label>Nama Pengguna:</label>
-                        <input type="text" id="newNamaUser" placeholder="Contoh: Siti Aisyah" required>
-                    </div>
-                    <div>
-                        <label>Akses / Role:</label>
-                        <select id="newRole">
-                            <option value="staf">Staf (Akses Terbatas / Read-Only)</option>
-                            <option value="admin">Admin (Akses Full)</option>
-                        </select>
-                    </div>
-                </div>
-                <button type="submit">Buatkan User Baru</button>
-            </form>
-
-            <h4 style="margin-top: 25px; margin-bottom: 10px;">Daftar Akun Pengguna</h4>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Username</th>
-                        <th>Nama Pengguna</th>
-                        <th>Role</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="userTableBody">
-                    <tr><td colspan="4">Memuat data user...</td></tr>
-                </tbody>
-            </table>
+        <!-- TAB MENU NAVIGASI -->
+        <div class="nav-tabs">
+            <button id="tabActiveBtn" class="tab-btn active" onclick="switchTab('active')">👥 Data Karyawan Aktif</button>
+            <button id="tabResignBtn" class="tab-btn" onclick="switchTab('resign')">🛑 Karyawan Keluar / Resign</button>
+            <button id="tabUserBtn" class="tab-btn hidden" onclick="switchTab('user')">👤 Kelola Akun User</button>
         </div>
 
-        <!-- FORM TAMBAH / EDIT KARYAWAN (HANYA DILIHAT OLEH ADMIN) -->
-        <div id="addEmployeeSection" class="card hidden">
-            <h2 id="formTitle">+ Tambah Data Karyawan</h2>
-            <form id="employeeForm">
-                <input type="hidden" id="editEmployeeId">
-                <div class="form-grid">
-                    <div>
-                        <label>NIK Karyawan:</label>
-                        <input type="text" id="nik" placeholder="Contoh: K-202601" required>
+        <!-- ================= PAGE 1: KARYAWAN AKTIF ================= -->
+        <div id="pageActive">
+            <!-- FORM TAMBAH / EDIT KARYAWAN (ADMIN ONLY) -->
+            <div id="addEmployeeSection" class="card hidden">
+                <h2 id="formTitle">+ Tambah Data Karyawan</h2>
+                <form id="employeeForm">
+                    <input type="hidden" id="editEmployeeId">
+                    <div class="form-grid">
+                        <div>
+                            <label>NIK Karyawan:</label>
+                            <input type="text" id="nik" placeholder="Contoh: K-202601" required>
+                        </div>
+                        <div>
+                            <label>Nama Lengkap:</label>
+                            <input type="text" id="nama" placeholder="Contoh: Budi Santoso" required>
+                        </div>
+                        <div>
+                            <label>Jabatan:</label>
+                            <input type="text" id="jabatan" placeholder="Contoh: Operator / Supervisor" required>
+                        </div>
+                        <div>
+                            <label>Departemen:</label>
+                            <select id="departemen">
+                                <option value="Operational">Operational</option>
+                                <option value="Maintenance">Maintenance</option>
+                                <option value="HR & Legal">HR & Legal</option>
+                                <option value="Finance">Finance</option>
+                                <option value="HSE">HSE</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Status Kerja:</label>
+                            <select id="status">
+                                <option value="Tetap">Tetap</option>
+                                <option value="Kontrak">Kontrak</option>
+                                <option value="Magang">Magang</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Nomor HP / WA:</label>
+                            <input type="text" id="noHp" placeholder="0812xxxxxxxx" required>
+                        </div>
                     </div>
-                    <div>
-                        <label>Nama Lengkap:</label>
-                        <input type="text" id="nama" placeholder="Contoh: Budi Santoso" required>
-                    </div>
-                    <div>
-                        <label>Jabatan:</label>
-                        <input type="text" id="jabatan" placeholder="Contoh: Operator / Supervisor" required>
-                    </div>
-                    <div>
-                        <label>Departemen:</label>
-                        <select id="departemen">
-                            <option value="Operational">Operational</option>
-                            <option value="Maintenance">Maintenance</option>
-                            <option value="HR & Legal">HR & Legal</option>
-                            <option value="Finance">Finance</option>
-                            <option value="HSE">HSE</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label>Status Kerja:</label>
-                        <select id="status">
-                            <option value="Tetap">Tetap</option>
-                            <option value="Kontrak">Kontrak</option>
-                            <option value="Magang">Magang</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label>Nomor HP / WA:</label>
-                        <input type="text" id="noHp" placeholder="0812xxxxxxxx" required>
-                    </div>
-                </div>
-                <button type="submit" id="btnSubmitEmployee">Simpan Data Karyawan</button>
-                <button type="button" id="btnCancelEdit" class="secondary hidden" onclick="resetForm()">Batal Edit</button>
-            </form>
+                    <button type="submit" id="btnSubmitEmployee">Simpan Data Karyawan</button>
+                    <button type="button" id="btnCancelEdit" class="secondary hidden" onclick="resetForm()">Batal Edit</button>
+                </form>
+            </div>
+
+            <!-- TABEL KARYAWAN AKTIF -->
+            <div class="card">
+                <h2>Daftar Karyawan Aktif</h2>
+                <input type="text" id="searchBox" placeholder="Cari berdasarkan nama/NIK..." onkeyup="filterEmployees()">
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>NIK</th>
+                            <th>Nama</th>
+                            <th>Jabatan</th>
+                            <th>Departemen</th>
+                            <th>Status</th>
+                            <th>No HP</th>
+                            <th id="thAksi">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="employeeTableBody">
+                        <tr><td colspan="7" style="text-align: center;">Memuat data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
-        <!-- TABEL DATA KARYAWAN AKTIF -->
-        <div class="card">
-            <h2>Daftar Karyawan Aktif</h2>
-            <input type="text" id="searchBox" placeholder="Cari berdasarkan nama/NIK..." onkeyup="filterEmployees()">
-            
-            <table>
-                <thead>
-                    <tr>
-                        <th>NIK</th>
-                        <th>Nama</th>
-                        <th>Jabatan</th>
-                        <th>Departemen</th>
-                        <th>Status</th>
-                        <th>No HP</th>
-                        <th id="thAksi">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="employeeTableBody">
-                    <tr><td colspan="7" style="text-align: center;">Memuat data...</td></tr>
-                </tbody>
-            </table>
+        <!-- ================= PAGE 2: KARYAWAN RESIGN ================= -->
+        <div id="pageResign" class="hidden">
+            <div class="card">
+                <h2 style="color: #991b1b;">Daftar Karyawan Keluar / Resign</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>NIK</th>
+                            <th>Nama</th>
+                            <th>Jabatan</th>
+                            <th>Departemen</th>
+                            <th>Status Terakhir</th>
+                            <th>No HP</th>
+                            <th id="thAksiResign">Aksi Admin</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resignTableBody">
+                        <tr><td colspan="7" style="text-align: center;">Memuat data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
-        <!-- TABEL DATA KARYAWAN RESIGN / KELUAR -->
-        <div class="card">
-            <h2 style="color: #991b1b;">Daftar Karyawan Keluar / Resign</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>NIK</th>
-                        <th>Nama</th>
-                        <th>Jabatan</th>
-                        <th>Departemen</th>
-                        <th>Status terakhir</th>
-                        <th>No HP</th>
-                        <th id="thAksiResign">Aksi Admin</th>
-                    </tr>
-                </thead>
-                <tbody id="resignTableBody">
-                    <tr><td colspan="7" style="text-align: center;">Memuat data...</td></tr>
-                </tbody>
-            </table>
+        <!-- ================= PAGE 3: KELOLA AKUN USER (ADMIN ONLY) ================= -->
+        <div id="pageUser" class="hidden">
+            <div class="card" style="border-left: 4px solid #2563eb;">
+                <h3>+ Buat Akses User Baru</h3>
+                <form id="addUserForm">
+                    <div class="form-grid">
+                        <div>
+                            <label>Username Baru:</label>
+                            <input type="text" id="newUsername" placeholder="Contoh: staf_operasional" required>
+                        </div>
+                        <div>
+                            <label>Password:</label>
+                            <input type="text" id="newPassword" placeholder="Contoh: pass123" required>
+                        </div>
+                        <div>
+                            <label>Nama Pengguna:</label>
+                            <input type="text" id="newNamaUser" placeholder="Contoh: Siti Aisyah" required>
+                        </div>
+                        <div>
+                            <label>Akses / Role:</label>
+                            <select id="newRole">
+                                <option value="staf">Staf (Akses Terbatas / Read-Only)</option>
+                                <option value="admin">Admin (Akses Full)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit">Buatkan User Baru</button>
+                </form>
+
+                <h4 style="margin-top: 25px; margin-bottom: 10px;">Daftar Akun Pengguna System</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Nama Pengguna</th>
+                            <th>Role</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody">
+                        <tr><td colspan="4">Memuat data user...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
+
     </div>
 
     <script>
@@ -230,19 +253,42 @@
             document.getElementById('userDisplay').innerHTML = `Halo, <strong>${nameDisplay}</strong> <span class="badge-role">${currentUser.role.toUpperCase()}</span>`;
 
             if (currentUser.role === 'admin') {
-                document.getElementById('adminUserSection').classList.remove('hidden');
+                document.getElementById('tabUserBtn').classList.remove('hidden');
                 document.getElementById('addEmployeeSection').classList.remove('hidden');
                 document.getElementById('thAksi').classList.remove('hidden');
                 document.getElementById('thAksiResign').classList.remove('hidden');
                 fetchUsers();
             } else {
-                document.getElementById('adminUserSection').classList.add('hidden');
+                document.getElementById('tabUserBtn').classList.add('hidden');
                 document.getElementById('addEmployeeSection').classList.add('hidden');
                 document.getElementById('thAksi').classList.add('hidden');
                 document.getElementById('thAksiResign').classList.add('hidden');
             }
 
+            switchTab('active');
             fetchEmployees();
+        }
+
+        // FUNGSI PINDAH TAB MENU
+        function switchTab(tabName) {
+            document.getElementById('pageActive').classList.add('hidden');
+            document.getElementById('pageResign').classList.add('hidden');
+            document.getElementById('pageUser').classList.add('hidden');
+
+            document.getElementById('tabActiveBtn').classList.remove('active');
+            document.getElementById('tabResignBtn').classList.remove('active');
+            document.getElementById('tabUserBtn').classList.remove('active');
+
+            if (tabName === 'active') {
+                document.getElementById('pageActive').classList.remove('hidden');
+                document.getElementById('tabActiveBtn').classList.add('active');
+            } else if (tabName === 'resign') {
+                document.getElementById('pageResign').classList.remove('hidden');
+                document.getElementById('tabResignBtn').classList.add('active');
+            } else if (tabName === 'user') {
+                document.getElementById('pageUser').classList.remove('hidden');
+                document.getElementById('tabUserBtn').classList.add('active');
+            }
         }
 
         // Login
@@ -420,7 +466,6 @@
             };
 
             if (editId) {
-                // Proses Edit
                 const { error } = await supabaseClient.from('karyawan').update(payload).eq('id', editId);
                 if (error) {
                     alert('Gagal memperbarui data: ' + error.message);
@@ -430,7 +475,6 @@
                     fetchEmployees();
                 }
             } else {
-                // Proses Tambah Baru
                 const { error } = await supabaseClient.from('karyawan').insert([payload]);
                 if (error) {
                     alert('Gagal menyimpan: ' + error.message);
@@ -458,7 +502,7 @@
             document.getElementById('btnSubmitEmployee').innerText = 'Update Data Karyawan';
             document.getElementById('btnCancelEdit').classList.remove('hidden');
 
-            window.scrollTo({ top: 300, behavior: 'smooth' });
+            window.scrollTo({ top: 150, behavior: 'smooth' });
         }
 
         function resetForm() {
