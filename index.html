@@ -3,176 +3,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem P2H & Maintenance Fleet</title>
+    <title>Sistem Database Karyawan</title>
     <!-- Supabase JS Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f6f9; }
-        h1, h2 { color: #333; }
-        .card { background: white; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        button { background-color: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; margin-right: 5px; margin-top: 5px; }
-        button.danger { background-color: #dc3545; }
-        button.success { background-color: #28a745; }
-        select, input, textarea { width: 100%; padding: 8px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        .status-badge { font-weight: bold; padding: 3px 8px; border-radius: 4px; color: white; display: inline-block; }
-        .bg-pending { background-color: #ffc107; color: black; }
-        .bg-process { background-color: #17a2b8; }
-        .bg-done { background-color: #28a745; }
-        .bg-reject { background-color: #dc3545; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f6f9; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 { text-align: center; color: #1e293b; margin-bottom: 25px; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        label { font-weight: 600; font-size: 14px; margin-bottom: 5px; display: block; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; }
+        button { background-color: #2563eb; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        button:hover { background-color: #1d4ed8; }
+        button.danger { background-color: #ef4444; padding: 6px 12px; font-size: 12px; }
+        button.danger:hover { background-color: #dc2626; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
+        th { background-color: #f8fafc; color: #475569; }
+        .badge { padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .badge-tetap { background-color: #dcfce7; color: #15803d; }
+        .badge-kontrak { background-color: #fef9c3; color: #a16207; }
+        .badge-magang { background-color: #e0f2fe; color: #0369a1; }
+        .search-box { margin-bottom: 15px; }
     </style>
 </head>
 <body>
 
-    <h1>Sistem P2H & Pelaporan Kerusakan Unit (Realtime DB)</h1>
+    <div class="container">
+        <h1>Sistem Database Karyawan</h1>
 
-    <!-- FORM INPUT P2H DRIVER -->
-    <div class="card">
-        <h2>1. Form P2H Digital (Driver)</h2>
-        <form id="p2hForm">
-            <label>Nomor Lambung / ID Unit:</label>
-            <input type="text" id="unitId" placeholder="Contoh: DT-01" required>
+        <!-- FORM TAMBAH KARYAWAN -->
+        <div class="card">
+            <h2>+ Tambah Data Karyawan</h2>
+            <form id="employeeForm">
+                <div class="form-grid">
+                    <div>
+                        <label>NIK Karyawan:</label>
+                        <input type="text" id="nik" placeholder="Contoh: K-202601" required>
+                    </div>
+                    <div>
+                        <label>Nama Lengkap:</label>
+                        <input type="text" id="nama" placeholder="Contoh: Budi Santoso" required>
+                    </div>
+                    <div>
+                        <label>Jabatan:</label>
+                        <input type="text" id="jabatan" placeholder="Contoh: Operator / Supervisor" required>
+                    </div>
+                    <div>
+                        <label>Departemen:</label>
+                        <select id="departemen">
+                            <option value="Operational">Operational</option>
+                            <option value="Maintenance">Maintenance</option>
+                            <option value="HR & Legal">HR & Legal</option>
+                            <option value="Finance">Finance</option>
+                            <option value="HSE">HSE</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Status Kerja:</label>
+                        <select id="status">
+                            <option value="Tetap">Tetap</option>
+                            <option value="Kontrak">Kontrak</option>
+                            <option value="Magang">Magang</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Nomor HP / WA:</label>
+                        <input type="text" id="noHp" placeholder="0812xxxxxxxx" required>
+                    </div>
+                </div>
+                <button type="submit">Simpan Data Karyawan</button>
+            </form>
+        </div>
 
-            <label>Nama Driver:</label>
-            <input type="text" id="driverName" placeholder="Contoh: Budi" required>
-
-            <label>Kondisi Unit:</label>
-            <select id="p2hStatus" onchange="toggleDamageReport()">
-                <option value="SEMUA OK">SEMUA OK</option>
-                <option value="ADA TEMUAN">ADA TEMUAN (Kerusakan)</option>
-            </select>
-
-            <div id="damageReportBox" style="display: none;">
-                <label>Detail Temuan Kerusakan (Damage Report):</label>
-                <textarea id="damageDetail" placeholder="Deskripsikan kerusakan unit..."></textarea>
-            </div>
-
-            <button type="submit" class="success">Kirim Laporan P2H</button>
-        </form>
-    </div>
-
-    <!-- DAFTAR LAPORAN & FLOW LOGIKA -->
-    <div class="card">
-        <h2>2. Daftar Antrean & Status Perbaikan</h2>
-        <div id="reportList">Memuat data dari Supabase...</div>
+        <!-- TABEL DATA KARYAWAN -->
+        <div class="card">
+            <h2>Daftar Karyawan</h2>
+            <input type="text" id="searchBox" class="search-box" placeholder="Cari berdasarkan nama/NIK..." onkeyup="filterEmployees()">
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>NIK</th>
+                        <th>Nama</th>
+                        <th>Jabatan</th>
+                        <th>Departemen</th>
+                        <th>Status</th>
+                        <th>No HP</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="employeeTableBody">
+                    <tr><td colspan="7" style="text-align: center;">Memuat data...</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <script>
-        // Inisialisasi Koneksi Supabase dengan Key Milikmu
+        // Inisialisasi Supabase
         const SUPABASE_URL = 'https://nnpihyxmckwetfaypsyk.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ucGloeXhtY2t3ZXRmYXlwc3lrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5ODY2OTgsImV4cCI6MjEwNTU2MjY5OH0.FLALmEmC8HqCj-VwLEYsIBk-RpGY22epjx04KlZymiI';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        function toggleDamageReport() {
-            const status = document.getElementById('p2hStatus').value;
-            document.getElementById('damageReportBox').style.display = (status === 'ADA TEMUAN') ? 'block' : 'none';
-        }
+        let allEmployees = [];
 
-        // Simpan Data P2H ke Supabase
-        document.getElementById('p2hForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const unit = document.getElementById('unitId').value;
-            const driver = document.getElementById('driverName').value;
-            const p2hStatus = document.getElementById('p2hStatus').value;
-            const detail = document.getElementById('damageDetail').value;
-
-            if (p2hStatus === 'SEMUA OK') {
-                alert(`P2H untuk Unit ${unit} berhasil. Kondisi Baik - SELESAI.`);
-            } else {
-                const { error } = await supabase
-                    .from('p2h_reports')
-                    .insert([{
-                        unit_id: unit,
-                        driver_name: driver,
-                        p2h_status: p2hStatus,
-                        damage_detail: detail,
-                        status_flow: 'MENUNGGU VALIDASI PENGAWAS',
-                        work_order: ''
-                    }]);
-
-                if (error) {
-                    alert('Gagal mengirim laporan: ' + error.message);
-                } else {
-                    alert(`Damage Report dikirim untuk Unit ${unit}. Menunggu Validasi Pengawas.`);
-                    fetchReports();
-                }
-            }
-
-            this.reset();
-            toggleDamageReport();
-        });
-
-        // Update Status Alur di Supabase
-        async function updateStatus(id, newStatus, woDetail = '') {
-            const updateData = { status_flow: newStatus };
-            if (woDetail) updateData.work_order = woDetail;
-
-            const { error } = await supabase
-                .from('p2h_reports')
-                .update(updateData)
-                .eq('id', id);
-
-            if (error) {
-                alert('Gagal memperbarui status: ' + error.message);
-            } else {
-                fetchReports();
-            }
-        }
-
-        // Ambil Data Laporan dari Supabase
-        async function fetchReports() {
-            const container = document.getElementById('reportList');
+        // Fetch Data Karyawan dari Supabase
+        async function fetchEmployees() {
+            const tbody = document.getElementById('employeeTableBody');
             const { data, error } = await supabase
-                .from('p2h_reports')
+                .from('karyawan')
                 .select('*')
                 .order('id', { ascending: false });
 
             if (error) {
-                container.innerHTML = 'Gagal memuat data: ' + error.message;
+                tbody.innerHTML = `<tr><td colspan="7">Gagal memuat data: ${error.message}</td></tr>`;
                 return;
             }
 
-            if (!data || data.length === 0) {
-                container.innerHTML = 'Belum ada laporan kerusakan.';
+            allEmployees = data;
+            renderTable(allEmployees);
+        }
+
+        // Render Tabel
+        function renderTable(dataList) {
+            const tbody = document.getElementById('employeeTableBody');
+            
+            if (dataList.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Belum ada data karyawan.</td></tr>';
                 return;
             }
 
-            container.innerHTML = data.map(r => `
-                <div style="border: 1px solid #ddd; padding: 10px; margin-top: 10px; border-radius: 5px; background: #fff;">
-                    <strong>Unit:</strong> ${r.unit_id} | <strong>Driver:</strong> ${r.driver_name}<br>
-                    <strong>Temuan Kerusakan:</strong> ${r.damage_detail || '-'}<br>
-                    <strong>Status Alur:</strong> <span class="status-badge bg-pending">${r.status_flow}</span>
-                    ${r.work_order ? `<br><strong>Work Order:</strong> ${r.work_order}` : ''}
-                    <hr>
-                    ${r.status_flow === 'MENUNGGU VALIDASI PENGAWAS' ? `
-                        <button onclick="updateStatus(${r.id}, 'KLASIFIKASI & TUGASKAN MEKANIK')" class="success">Pengawas: Valid (Lanjutkan)</button>
-                        <button onclick="updateStatus(${r.id}, 'CLOSED (DITOLAK PENGAWAS)')" class="danger">Pengawas: Tidak Valid (Closed)</button>
-                    ` : ''}
-
-                    ${r.status_flow === 'KLASIFIKASI & TUGASKAN MEKANIK' ? `
-                        <button onclick="promptWorkOrder(${r.id})">Mekanik: Buat Work Order & Mulai Repair</button>
-                    ` : ''}
-
-                    ${r.status_flow === 'PROSES REPAIR' ? `
-                        <button onclick="updateStatus(${r.id}, 'REPAIR COMPLETED (MENUNGGU VERIFIKASI)')" class="success">Mekanik: Repair Selesai</button>
-                    ` : ''}
-
-                    ${r.status_flow === 'REPAIR COMPLETED (MENUNGGU VERIFIKASI)' ? `
-                        <button onclick="updateStatus(${r.id}, 'CLOSED (VERIFIKASI BERHASIL)')" class="success">Verifikator: Valid (Closed)</button>
-                        <button onclick="updateStatus(${r.id}, 'PROSES REPAIR', 'Repair Ulang Diperlukan')" class="danger">Verifikator: Tidak Valid (Repair Ulang)</button>
-                    ` : ''}
-                </div>
+            tbody.innerHTML = dataList.map(e => `
+                <tr>
+                    <td><strong>${e.nik}</strong></td>
+                    <td>${e.nama}</td>
+                    <td>${e.jabatan}</td>
+                    <td>${e.departemen}</td>
+                    <td><span class="badge badge-${e.status.toLowerCase()}">${e.status}</span></td>
+                    <td>${e.no_hp}</td>
+                    <td>
+                        <button class="danger" onclick="deleteEmployee(${e.id}, '${e.nama}')">Hapus</button>
+                    </td>
+                </tr>
             `).join('');
         }
 
-        function promptWorkOrder(id) {
-            const wo = prompt("Masukkan Deskripsi Work Order / Perbaikan yang Akan Dilakukan:");
-            if (wo) {
-                updateStatus(id, 'PROSES REPAIR', wo);
+        // Simpan Karyawan Baru
+        document.getElementById('employeeForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const newEmployee = {
+                nik: document.getElementById('nik').value,
+                nama: document.getElementById('nama').value,
+                jabatan: document.getElementById('jabatan').value,
+                departemen: document.getElementById('departemen').value,
+                status: document.getElementById('status').value,
+                no_hp: document.getElementById('noHp').value
+            };
+
+            const { error } = await supabase.from('karyawan').insert([newEmployee]);
+
+            if (error) {
+                alert('Gagal menyimpan data: ' + error.message);
+            } else {
+                alert('Data Karyawan berhasil disimpan!');
+                this.reset();
+                fetchEmployees();
+            }
+        });
+
+        // Hapus Data Karyawan
+        async function deleteEmployee(id, nama) {
+            if (confirm(`Apakah Anda yakin ingin menghapus data karyawan ${nama}?`)) {
+                const { error } = await supabase.from('karyawan').delete().eq('id', id);
+                if (error) {
+                    alert('Gagal menghapus: ' + error.message);
+                } else {
+                    fetchEmployees();
+                }
             }
         }
 
-        // Load data awal saat halaman dibuka
-        fetchReports();
+        // Fitur Pencarian Realtime
+        function filterEmployees() {
+            const keyword = document.getElementById('searchBox').value.toLowerCase();
+            const filtered = allEmployees.filter(e => 
+                e.nama.toLowerCase().includes(keyword) || 
+                e.nik.toLowerCase().includes(keyword) ||
+                e.jabatan.toLowerCase().includes(keyword)
+            );
+            renderTable(filtered);
+        }
+
+        // Jalankan saat pertama kali dibuka
+        fetchEmployees();
     </script>
 </body>
 </html>
